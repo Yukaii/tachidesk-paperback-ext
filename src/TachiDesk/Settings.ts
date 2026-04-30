@@ -4,7 +4,7 @@ import {
     DUISelect,
     RequestManager,
     SourceStateManager
-} from "@paperback/types"
+} from "@paperback/types/lib/compat/0.8/index.js"
 
 import {
     DEFAULT_SERVER_SOURCE,
