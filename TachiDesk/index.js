@@ -2481,19 +2481,23 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
 (function (Buffer){(function (){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAuthString = exports.setAuthString = exports.getAuthState = exports.setAuthState = exports.getServerAPI = exports.getServerURL = exports.setServerURL = exports.resetSettings = exports.languages = exports.rowStyles = exports.DEFAULT_SOURCE_ROW_STYLE = exports.DEFAULT_CATEGORY_ROW_STYLE = exports.DEFAULT_UPDATED_ROW_STYLE = exports.DEFAULT_SOURCE_ROW_STATE = exports.DEFAULT_CATEGORY_ROW_STATE = exports.DEFAULT_UPDATED_ROW_STATE = exports.DEFAULT_MANGA_PER_ROW = exports.DEFAULT_SELECTED_LANGUAGES = exports.DEFAULT_SELECTED_SOURCES = exports.DEFAULT_SERVER_SOURCES = exports.DEFAULT_SERVER_SOURCE = exports.DEFAULT_SELECTED_CATEGORIES = exports.DEFAULT_SERVER_CATEGORIES = exports.DEFAULT_SERVER_CATEGORY = exports.DEFAULT_PASSWORD = exports.DEFAULT_USERNAME = exports.DEFAULT_AUTH_STRING = exports.DEFAULT_AUTH_STATE = exports.DEFAULT_SERVER_API = exports.DEFAULT_API_ENDPOINT = exports.DEFAULT_SERVER_URL = exports.SOURCE_ROW_STYLE_KEY = exports.CATEGORY_ROW_STYLE_KEY = exports.UPDATED_ROW_STYLE_KEY = exports.SOURCE_ROW_STATE_KEY = exports.CATEGORY_ROW_STATE_KEY = exports.UPDATED_ROW_STATE_KEY = exports.MANGA_PER_ROW_KEY = exports.SELECTED_LANGUAGES_KEY = exports.SELECTED_SOURCES_KEY = exports.SERVER_SOURCES_KEY = exports.SELECTED_CATEGORIES_KEY = exports.SERVER_CATEGORIES_KEY = exports.PASSWORD_KEY = exports.USERNAME_KEY = exports.AUTH_STRING_KEY = exports.AUTH_STATE_KEY = exports.SERVER_API_KEY = exports.SERVER_URL_KEY = exports.serverUnavailableMangaTiles = void 0;
-exports.v1Migration = exports.getSelectedLanguages = exports.setSelectedLanguages = exports.getLanguageName = exports.getLanguageCodes = exports.getServerLanguages = exports.getSourceRowStyle = exports.setSourceRowStyle = exports.getCategoryRowStyle = exports.setCategoryRowStyle = exports.getUpdatedRowStyle = exports.setUpdatedRowStyle = exports.getSourceRowState = exports.setSourceRowState = exports.getCategoryRowState = exports.setCategoryRowState = exports.getUpdatedRowState = exports.setUpdatedRowState = exports.getMangaPerRow = exports.setMangaPerRow = exports.styleResolver = exports.getSourceNameFromId = exports.getSourceFromId = exports.getSourcesIds = exports.getSelectedSources = exports.setSelectedSources = exports.getServerSources = exports.setServerSources = exports.fetchServerSources = exports.getCategoryNameFromId = exports.getCategoryFromId = exports.getCategoriesIds = exports.getSelectedCategories = exports.setSelectedCategories = exports.getServerCategories = exports.setServerCategories = exports.fetchServerCategories = exports.testRequest = exports.makeRequest = exports.getPassword = exports.setPassword = exports.getUsername = exports.setUsername = void 0;
+exports.rowStyles = exports.DEFAULT_SOURCE_ROW_STYLE = exports.DEFAULT_CATEGORY_ROW_STYLE = exports.DEFAULT_UPDATED_ROW_STYLE = exports.DEFAULT_SOURCE_ROW_STATE = exports.DEFAULT_CATEGORY_ROW_STATE = exports.DEFAULT_UPDATED_ROW_STATE = exports.DEFAULT_MANGA_PER_ROW = exports.DEFAULT_SELECTED_LANGUAGES = exports.DEFAULT_SELECTED_SOURCES = exports.DEFAULT_SERVER_SOURCES = exports.DEFAULT_SERVER_SOURCE = exports.DEFAULT_SELECTED_CATEGORIES = exports.DEFAULT_SERVER_CATEGORIES = exports.DEFAULT_SERVER_CATEGORY = exports.DEFAULT_CLOUDFLARE_ACCESS_CLIENT_SECRET = exports.DEFAULT_CLOUDFLARE_ACCESS_CLIENT_ID = exports.DEFAULT_CLOUDFLARE_ACCESS_STATE = exports.DEFAULT_PASSWORD = exports.DEFAULT_USERNAME = exports.DEFAULT_AUTH_STRING = exports.DEFAULT_AUTH_STATE = exports.DEFAULT_SERVER_API = exports.DEFAULT_API_ENDPOINT = exports.DEFAULT_SERVER_URL = exports.SOURCE_ROW_STYLE_KEY = exports.CATEGORY_ROW_STYLE_KEY = exports.UPDATED_ROW_STYLE_KEY = exports.SOURCE_ROW_STATE_KEY = exports.CATEGORY_ROW_STATE_KEY = exports.UPDATED_ROW_STATE_KEY = exports.MANGA_PER_ROW_KEY = exports.SELECTED_LANGUAGES_KEY = exports.SELECTED_SOURCES_KEY = exports.SERVER_SOURCES_KEY = exports.SELECTED_CATEGORIES_KEY = exports.SERVER_CATEGORIES_KEY = exports.CLOUDFLARE_ACCESS_CLIENT_SECRET_KEY = exports.CLOUDFLARE_ACCESS_CLIENT_ID_KEY = exports.CLOUDFLARE_ACCESS_STATE_KEY = exports.PASSWORD_KEY = exports.USERNAME_KEY = exports.AUTH_STRING_KEY = exports.AUTH_STATE_KEY = exports.SERVER_API_KEY = exports.SERVER_URL_KEY = exports.SERVER_UNAVAILABLE_PAGE = exports.SERVER_UNAVAILABLE_CHAPTER_ID = exports.SERVER_UNAVAILABLE_MANGA_ID = exports.serverUnavailableMangaTiles = void 0;
+exports.setUpdatedRowStyle = exports.getSourceRowState = exports.setSourceRowState = exports.getCategoryRowState = exports.setCategoryRowState = exports.getUpdatedRowState = exports.setUpdatedRowState = exports.getMangaPerRow = exports.setMangaPerRow = exports.styleResolver = exports.getSourceNameFromId = exports.getSourceFromId = exports.getSourcesIds = exports.getSelectedSources = exports.setSelectedSources = exports.getServerSources = exports.setServerSources = exports.fetchServerSources = exports.getCategoryNameFromId = exports.getCategoryFromId = exports.getCategoriesIds = exports.getSelectedCategories = exports.setSelectedCategories = exports.getServerCategories = exports.setServerCategories = exports.fetchServerCategories = exports.testRequest = exports.makeRequest = exports.fetchChapterPages = exports.buildThumbnailURL = exports.getCloudflareAccessHeaders = exports.getCloudflareAccessClientSecret = exports.setCloudflareAccessClientSecret = exports.getCloudflareAccessClientId = exports.setCloudflareAccessClientId = exports.getCloudflareAccessState = exports.setCloudflareAccessState = exports.getPassword = exports.setPassword = exports.getUsername = exports.setUsername = exports.getAuthString = exports.setAuthString = exports.getAuthState = exports.setAuthState = exports.getServerAPI = exports.getServerURL = exports.setServerURL = exports.resetSettings = exports.languages = void 0;
+exports.v1Migration = exports.getSelectedLanguages = exports.setSelectedLanguages = exports.getLanguageName = exports.getLanguageCodes = exports.getServerLanguages = exports.getSourceRowStyle = exports.setSourceRowStyle = exports.getCategoryRowStyle = exports.setCategoryRowStyle = exports.getUpdatedRowStyle = void 0;
 function serverUnavailableMangaTiles() {
     return [
         App.createPartialSourceManga({
             title: "Server",
             image: "",
-            mangaId: "placeholder-id",
+            mangaId: exports.SERVER_UNAVAILABLE_MANGA_ID,
             subtitle: "Unavailable"
         })
     ];
 }
 exports.serverUnavailableMangaTiles = serverUnavailableMangaTiles;
+exports.SERVER_UNAVAILABLE_MANGA_ID = "placeholder-id";
+exports.SERVER_UNAVAILABLE_CHAPTER_ID = "0";
+exports.SERVER_UNAVAILABLE_PAGE = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==";
 // StateManager Keys
 exports.SERVER_URL_KEY = "serverURL";
 exports.SERVER_API_KEY = "serverAPI";
@@ -2501,6 +2505,9 @@ exports.AUTH_STATE_KEY = "AuthState";
 exports.AUTH_STRING_KEY = "AuthString";
 exports.USERNAME_KEY = "serverUsername";
 exports.PASSWORD_KEY = "serverPassword";
+exports.CLOUDFLARE_ACCESS_STATE_KEY = "cloudflareAccessState";
+exports.CLOUDFLARE_ACCESS_CLIENT_ID_KEY = "cloudflareAccessClientId";
+exports.CLOUDFLARE_ACCESS_CLIENT_SECRET_KEY = "cloudflareAccessClientSecret";
 exports.SERVER_CATEGORIES_KEY = "serverCategories";
 exports.SELECTED_CATEGORIES_KEY = "selectedCategories";
 exports.SERVER_SOURCES_KEY = "serverSources";
@@ -2515,12 +2522,15 @@ exports.CATEGORY_ROW_STYLE_KEY = "categoryRowStyle";
 exports.SOURCE_ROW_STYLE_KEY = "sourceRowStyle";
 // Defaults
 exports.DEFAULT_SERVER_URL = "http://127.0.0.1:4567/";
-exports.DEFAULT_API_ENDPOINT = "api/v1/";
+exports.DEFAULT_API_ENDPOINT = "api/graphql";
 exports.DEFAULT_SERVER_API = exports.DEFAULT_SERVER_URL + exports.DEFAULT_API_ENDPOINT;
 exports.DEFAULT_AUTH_STATE = false;
 exports.DEFAULT_AUTH_STRING = "";
 exports.DEFAULT_USERNAME = "";
 exports.DEFAULT_PASSWORD = "";
+exports.DEFAULT_CLOUDFLARE_ACCESS_STATE = false;
+exports.DEFAULT_CLOUDFLARE_ACCESS_CLIENT_ID = "";
+exports.DEFAULT_CLOUDFLARE_ACCESS_CLIENT_SECRET = "";
 exports.DEFAULT_SERVER_CATEGORY = {
     id: 0,
     order: 0,
@@ -2540,7 +2550,7 @@ exports.DEFAULT_SERVER_SOURCE = {
     id: "0",
     name: "Local source",
     lang: "localsourcelang",
-    iconUrl: "/api/v1/extension/icon/localSource",
+    iconUrl: "",
     supportsLatest: true,
     isConfigurable: false,
     isNsfw: false,
@@ -2602,6 +2612,255 @@ exports.languages = {
     'zh-Hant': '中文 (繁體字)', // Chinese (Traditional)
 };
 // ! Query Interfaces End
+const ABOUT_SERVER_QUERY = `
+    query PAPERBACK_ABOUT_SERVER {
+        aboutServer {
+            buildTime
+            buildType
+            discord
+            github
+            name
+            version
+        }
+    }
+`;
+const CATEGORY_LIST_QUERY = `
+    query PAPERBACK_CATEGORY_LIST {
+        categories(order: [{ by: ORDER, byType: ASC }]) {
+            nodes {
+                id
+                name
+                default
+                order
+                includeInUpdate
+                meta {
+                    key
+                    value
+                }
+                mangas {
+                    totalCount
+                }
+            }
+        }
+    }
+`;
+const SOURCE_LIST_QUERY = `
+    query PAPERBACK_SOURCE_LIST {
+        sources {
+            nodes {
+                id
+                name
+                displayName
+                lang
+                iconUrl
+                supportsLatest
+                isConfigurable
+                isNsfw
+            }
+        }
+    }
+`;
+const MANGA_FIELDS = `
+    id
+    sourceId
+    url
+    realUrl
+    title
+    thumbnailUrl
+    thumbnailUrlLastFetched
+    initialized
+    artist
+    author
+    description
+    genre
+    status
+    inLibrary
+    inLibraryAt
+    updateStrategy
+    lastFetchedAt
+    chaptersLastFetchedAt
+    unreadCount
+    downloadCount
+    age
+    chaptersAge
+    meta {
+        key
+        value
+    }
+    chapters {
+        totalCount
+    }
+    source {
+        id
+        name
+        displayName
+        lang
+        iconUrl
+        supportsLatest
+        isConfigurable
+        isNsfw
+    }
+`;
+const MANGA_QUERY = `
+    query PAPERBACK_MANGA($id: Int!) {
+        manga(id: $id) {
+            ${MANGA_FIELDS}
+        }
+    }
+`;
+const FETCH_MANGA_MUTATION = `
+    mutation PAPERBACK_FETCH_MANGA($id: Int!) {
+        fetchManga(input: { id: $id }) {
+            manga {
+                ${MANGA_FIELDS}
+            }
+        }
+    }
+`;
+const MANGA_FULL_QUERY = `
+    query PAPERBACK_MANGA_FULL($id: Int!) {
+        manga(id: $id) {
+            ${MANGA_FIELDS}
+            lastReadChapter {
+                id
+                chapterNumber
+                sourceOrder
+                name
+                uploadDate
+                scanlator
+                mangaId
+                isRead
+                isBookmarked
+                lastPageRead
+                lastReadAt
+                fetchedAt
+                realUrl
+                isDownloaded
+                pageCount
+                url
+            }
+        }
+    }
+`;
+const CHAPTER_FIELDS = `
+    id
+    url
+    name
+    uploadDate
+    chapterNumber
+    scanlator
+    mangaId
+    isRead
+    isBookmarked
+    lastPageRead
+    lastReadAt
+    sourceOrder
+    fetchedAt
+    realUrl
+    isDownloaded
+    pageCount
+    meta {
+        key
+        value
+    }
+`;
+const CHAPTERS_QUERY = `
+    query PAPERBACK_CHAPTERS($mangaId: Int!) {
+        chapters(
+            filter: { mangaId: { equalTo: $mangaId } }
+            order: [{ by: SOURCE_ORDER, byType: ASC }]
+        ) {
+            nodes {
+                ${CHAPTER_FIELDS}
+            }
+        }
+    }
+`;
+const FETCH_CHAPTERS_MUTATION = `
+    mutation PAPERBACK_FETCH_CHAPTERS($mangaId: Int!) {
+        fetchChapters(input: { mangaId: $mangaId }) {
+            chapters {
+                ${CHAPTER_FIELDS}
+            }
+        }
+    }
+`;
+const CHAPTER_BY_SOURCE_ORDER_QUERY = `
+    query PAPERBACK_CHAPTER_BY_SOURCE_ORDER($mangaId: Int!, $sourceOrder: Int!) {
+        chapters(
+            filter: {
+                mangaId: { equalTo: $mangaId }
+                sourceOrder: { equalTo: $sourceOrder }
+            }
+            first: 1
+        ) {
+            nodes {
+                ${CHAPTER_FIELDS}
+            }
+        }
+    }
+`;
+const FETCH_CHAPTER_PAGES_MUTATION = `
+    mutation PAPERBACK_FETCH_CHAPTER_PAGES($chapterId: Int!) {
+        fetchChapterPages(input: { chapterId: $chapterId }) {
+            pages
+        }
+    }
+`;
+const RECENTLY_UPDATED_QUERY = `
+    query PAPERBACK_RECENTLY_UPDATED($first: Int!, $offset: Int!) {
+        chapters(
+            filter: { inLibrary: { equalTo: true } }
+            order: [
+                { by: FETCHED_AT, byType: DESC }
+                { by: SOURCE_ORDER, byType: DESC }
+            ]
+            first: $first
+            offset: $offset
+        ) {
+            nodes {
+                ${CHAPTER_FIELDS}
+                manga {
+                    ${MANGA_FIELDS}
+                }
+            }
+            pageInfo {
+                hasNextPage
+            }
+        }
+    }
+`;
+const CATEGORY_MANGAS_QUERY = `
+    query PAPERBACK_CATEGORY_MANGAS($id: Int!) {
+        category(id: $id) {
+            mangas {
+                nodes {
+                    ${MANGA_FIELDS}
+                }
+            }
+        }
+    }
+`;
+const FETCH_SOURCE_MANGA_MUTATION = `
+    mutation PAPERBACK_FETCH_SOURCE_MANGA($input: FetchSourceMangaInput!) {
+        fetchSourceManga(input: $input) {
+            hasNextPage
+            mangas {
+                ${MANGA_FIELDS}
+            }
+        }
+    }
+`;
+const UPDATE_CHAPTER_READ_MUTATION = `
+    mutation PAPERBACK_UPDATE_CHAPTER_READ($id: Int!, $isRead: Boolean!) {
+        updateChapter(input: { id: $id, patch: { isRead: $isRead } }) {
+            chapter {
+                id
+                isRead
+            }
+        }
+    }
+`;
 // ! Reset Settings Begin
 async function resetSettings(stateManager) {
     await stateManager.store(exports.SERVER_URL_KEY, exports.DEFAULT_SERVER_URL);
@@ -2610,6 +2869,9 @@ async function resetSettings(stateManager) {
     await stateManager.keychain.store(exports.AUTH_STRING_KEY, exports.DEFAULT_AUTH_STRING);
     await stateManager.store(exports.USERNAME_KEY, exports.DEFAULT_USERNAME);
     await stateManager.keychain.store(exports.PASSWORD_KEY, exports.DEFAULT_PASSWORD);
+    await stateManager.store(exports.CLOUDFLARE_ACCESS_STATE_KEY, exports.DEFAULT_CLOUDFLARE_ACCESS_STATE);
+    await stateManager.store(exports.CLOUDFLARE_ACCESS_CLIENT_ID_KEY, exports.DEFAULT_CLOUDFLARE_ACCESS_CLIENT_ID);
+    await stateManager.keychain.store(exports.CLOUDFLARE_ACCESS_CLIENT_SECRET_KEY, exports.DEFAULT_CLOUDFLARE_ACCESS_CLIENT_SECRET);
     await stateManager.store(exports.SERVER_CATEGORIES_KEY, exports.DEFAULT_SERVER_CATEGORIES);
     await stateManager.store(exports.SELECTED_CATEGORIES_KEY, exports.DEFAULT_SELECTED_CATEGORIES);
     await stateManager.store(exports.SERVER_SOURCES_KEY, exports.DEFAULT_SERVER_SOURCES);
@@ -2642,7 +2904,7 @@ async function getServerURL(stateManager) {
     return await stateManager.retrieve(exports.SERVER_URL_KEY) ?? exports.DEFAULT_SERVER_URL;
 }
 exports.getServerURL = getServerURL;
-// Get Server API url (i.e. http://127.0.0.1/api/v1/)
+// Get Server API url (i.e. http://127.0.0.1/api/graphql)
 async function getServerAPI(stateManager) {
     return await stateManager.retrieve(exports.SERVER_API_KEY) ?? exports.DEFAULT_SERVER_API;
 }
@@ -2687,46 +2949,356 @@ async function getPassword(stateManager) {
 }
 exports.getPassword = getPassword;
 // ! Authentication End
+// ! Cloudflare Access Start
+async function setCloudflareAccessState(stateManager, state) {
+    await stateManager.store(exports.CLOUDFLARE_ACCESS_STATE_KEY, state);
+}
+exports.setCloudflareAccessState = setCloudflareAccessState;
+async function getCloudflareAccessState(stateManager) {
+    return await stateManager.retrieve(exports.CLOUDFLARE_ACCESS_STATE_KEY) ?? exports.DEFAULT_CLOUDFLARE_ACCESS_STATE;
+}
+exports.getCloudflareAccessState = getCloudflareAccessState;
+async function setCloudflareAccessClientId(stateManager, clientId) {
+    await stateManager.store(exports.CLOUDFLARE_ACCESS_CLIENT_ID_KEY, clientId);
+}
+exports.setCloudflareAccessClientId = setCloudflareAccessClientId;
+async function getCloudflareAccessClientId(stateManager) {
+    return await stateManager.retrieve(exports.CLOUDFLARE_ACCESS_CLIENT_ID_KEY) ?? exports.DEFAULT_CLOUDFLARE_ACCESS_CLIENT_ID;
+}
+exports.getCloudflareAccessClientId = getCloudflareAccessClientId;
+async function setCloudflareAccessClientSecret(stateManager, clientSecret) {
+    await stateManager.keychain.store(exports.CLOUDFLARE_ACCESS_CLIENT_SECRET_KEY, clientSecret);
+}
+exports.setCloudflareAccessClientSecret = setCloudflareAccessClientSecret;
+async function getCloudflareAccessClientSecret(stateManager) {
+    return await stateManager.keychain.retrieve(exports.CLOUDFLARE_ACCESS_CLIENT_SECRET_KEY) ?? exports.DEFAULT_CLOUDFLARE_ACCESS_CLIENT_SECRET;
+}
+exports.getCloudflareAccessClientSecret = getCloudflareAccessClientSecret;
+async function getCloudflareAccessHeaders(stateManager) {
+    if (!(await getCloudflareAccessState(stateManager))) {
+        return {};
+    }
+    const clientId = (await getCloudflareAccessClientId(stateManager)).trim();
+    const clientSecret = (await getCloudflareAccessClientSecret(stateManager)).trim();
+    if (clientId === "" || clientSecret === "") {
+        return {};
+    }
+    return {
+        "CF-Access-Client-ID": clientId,
+        "CF-Access-Client-Secret": clientSecret
+    };
+}
+exports.getCloudflareAccessHeaders = getCloudflareAccessHeaders;
+// ! Cloudflare Access End
 // ! Requests
-async function makeRequest(stateManager, requestManager, apiEndpoint, method = "GET", data, headers = {}) {
+function buildThumbnailURL(serverURL, thumbnailUrl) {
+    if (!thumbnailUrl) {
+        return "";
+    }
+    if (thumbnailUrl.startsWith("http://") || thumbnailUrl.startsWith("https://")) {
+        return thumbnailUrl;
+    }
+    if (thumbnailUrl.startsWith("/")) {
+        return serverURL + thumbnailUrl.slice(1);
+    }
+    return serverURL + thumbnailUrl;
+}
+exports.buildThumbnailURL = buildThumbnailURL;
+function numberOrZero(value) {
+    if (value === null || value === undefined || value === "") {
+        return 0;
+    }
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : 0;
+}
+function mapSource(source) {
+    if (!source) {
+        return exports.DEFAULT_SERVER_SOURCE;
+    }
+    return {
+        id: source.id,
+        name: source.name,
+        lang: source.lang,
+        iconUrl: source.iconUrl ?? "",
+        supportsLatest: source.supportsLatest ?? false,
+        isConfigurable: source.isConfigurable ?? false,
+        isNsfw: source.isNsfw ?? false,
+        displayName: source.displayName ?? source.name
+    };
+}
+function mapCategory(category) {
+    return {
+        id: category.id,
+        order: category.order,
+        name: category.name,
+        default: category.default,
+        size: category.mangas?.totalCount ?? 0,
+        includeInUpdate: category.includeInUpdate ?? "EXCLUDE",
+        meta: category.meta ?? []
+    };
+}
+function mapChapter(chapter) {
+    return {
+        id: chapter.id,
+        url: chapter.url ?? "",
+        name: chapter.name,
+        uploadDate: numberOrZero(chapter.uploadDate),
+        chapterNumber: chapter.chapterNumber,
+        scanlator: chapter.scanlator ?? "",
+        mangaId: chapter.mangaId,
+        read: chapter.isRead,
+        bookmarked: chapter.isBookmarked,
+        lastPageRead: chapter.lastPageRead ?? 0,
+        lastReadAt: numberOrZero(chapter.lastReadAt),
+        index: chapter.sourceOrder,
+        fetchedAt: numberOrZero(chapter.fetchedAt),
+        realUrl: chapter.realUrl ?? "",
+        downloaded: chapter.isDownloaded,
+        pageCount: chapter.pageCount ?? 0,
+        chapterCount: 0,
+        meta: chapter.meta ?? []
+    };
+}
+function mapManga(manga) {
+    return {
+        id: manga.id,
+        sourceId: manga.sourceId,
+        url: manga.url ?? "",
+        title: manga.title,
+        thumbnailUrl: manga.thumbnailUrl ?? "",
+        thumbnailUrlLastFetched: numberOrZero(manga.thumbnailUrlLastFetched),
+        initialized: manga.initialized,
+        artist: manga.artist ?? "",
+        author: manga.author ?? "",
+        description: manga.description ?? "",
+        genre: manga.genre ?? [],
+        status: manga.status ?? "",
+        inLibrary: manga.inLibrary,
+        inLibraryAt: numberOrZero(manga.inLibraryAt),
+        source: mapSource(manga.source),
+        meta: manga.meta ?? [],
+        realUrl: manga.realUrl ?? "",
+        lastFetchedAt: numberOrZero(manga.lastFetchedAt),
+        chaptersLastFetchedAt: numberOrZero(manga.chaptersLastFetchedAt),
+        updateStrategy: manga.updateStrategy ?? "",
+        freshData: true,
+        unreadCount: manga.unreadCount ?? 0,
+        downloadCount: manga.downloadCount ?? 0,
+        chapterCount: manga.chapters?.totalCount ?? 0,
+        lastReadAt: numberOrZero(manga.lastReadChapter?.lastReadAt),
+        lastChapterRead: manga.lastReadChapter ? mapChapter(manga.lastReadChapter) : undefined,
+        age: numberOrZero(manga.age),
+        chaptersAge: numberOrZero(manga.chaptersAge)
+    };
+}
+async function makeGraphQLRequest(stateManager, requestManager, query, variables = {}, headers = {}) {
     const serverAPI = await getServerAPI(stateManager);
     const request = App.createRequest({
-        url: serverAPI + apiEndpoint,
-        method,
-        data,
-        headers
+        url: serverAPI,
+        method: "POST",
+        data: JSON.stringify({
+            query,
+            variables
+        }),
+        headers: {
+            "content-type": "application/json",
+            "accept": "application/json",
+            ...headers
+        }
     });
     let response;
-    let responseStatus;
-    let responseData;
-    // Checks if the request actually went out
     try {
         response = await requestManager.schedule(request, 0);
     }
     catch (error) {
-        return new Error(serverAPI + apiEndpoint);
+        return new Error(serverAPI);
     }
-    // Checks if we got a response, then checks if we got a good response
-    try {
-        responseStatus = response?.status;
-    }
-    catch (error) {
-        return Error("Couldn't connect to server.");
-    }
+    const responseStatus = response?.status;
     if (responseStatus == 401) {
         return Error("Unauthorized" + " " + JSON.stringify(await getAuthString(stateManager)));
     }
-    if (responseStatus != 200) {
-        return Error("Your query is invalid. " + JSON.stringify(response?.status));
+    if (!responseStatus || responseStatus < 200 || responseStatus >= 300) {
+        return Error("Your query is invalid. " + JSON.stringify(responseStatus));
     }
-    // Checks for garbage data
+    let responseData;
     try {
         responseData = JSON.parse(response.data ?? "");
     }
     catch (error) {
-        return Error(apiEndpoint);
+        return Error("Invalid GraphQL response");
     }
-    return responseData;
+    if (responseData.errors?.length) {
+        return Error(responseData.errors[0]?.message ?? "GraphQL error");
+    }
+    return responseData.data;
+}
+async function getChapterNodeFromSourceOrder(stateManager, requestManager, mangaId, sourceOrder) {
+    const response = await makeGraphQLRequest(stateManager, requestManager, CHAPTER_BY_SOURCE_ORDER_QUERY, {
+        mangaId,
+        sourceOrder
+    });
+    if (response instanceof Error) {
+        return response;
+    }
+    const chapter = response.chapters.nodes[0];
+    if (!chapter) {
+        return Error(`Chapter ${sourceOrder} not found for manga ${mangaId}`);
+    }
+    return chapter;
+}
+async function fetchChapterPages(stateManager, requestManager, mangaId, chapterId) {
+    const chapter = await getChapterNodeFromSourceOrder(stateManager, requestManager, Number(mangaId), Number(chapterId));
+    if (chapter instanceof Error) {
+        return chapter;
+    }
+    const response = await makeGraphQLRequest(stateManager, requestManager, FETCH_CHAPTER_PAGES_MUTATION, {
+        chapterId: chapter.id
+    });
+    if (response instanceof Error) {
+        return response;
+    }
+    return response.fetchChapterPages.pages;
+}
+exports.fetchChapterPages = fetchChapterPages;
+async function makeRequest(stateManager, requestManager, apiEndpoint, method = "GET", data, headers = {}) {
+    const endpointParts = apiEndpoint.split("?");
+    const path = endpointParts[0] ?? "";
+    const queryString = endpointParts[1] ?? "";
+    if (path === "settings/about/") {
+        const response = await makeGraphQLRequest(stateManager, requestManager, ABOUT_SERVER_QUERY, {}, headers);
+        return response instanceof Error ? response : response.aboutServer;
+    }
+    if (path === "category/") {
+        const response = await makeGraphQLRequest(stateManager, requestManager, CATEGORY_LIST_QUERY, {}, headers);
+        return response instanceof Error ? response : response.categories.nodes.map(mapCategory);
+    }
+    if (path === "source/list") {
+        const response = await makeGraphQLRequest(stateManager, requestManager, SOURCE_LIST_QUERY, {}, headers);
+        return response instanceof Error ? response : response.sources.nodes.map(mapSource);
+    }
+    const mangaMatch = path.match(/^manga\/(\d+)$/);
+    if (mangaMatch) {
+        const id = Number(mangaMatch[1]);
+        const onlineFetch = queryString.includes("onlineFetch=true");
+        const response = await makeGraphQLRequest(stateManager, requestManager, onlineFetch ? FETCH_MANGA_MUTATION : MANGA_QUERY, { id }, headers);
+        if (response instanceof Error) {
+            return response;
+        }
+        const manga = onlineFetch ? response.fetchManga?.manga : response.manga;
+        return manga ? mapManga(manga) : Error(`Manga ${id} not found`);
+    }
+    const mangaFullMatch = path.match(/^manga\/(\d+)\/full$/);
+    if (mangaFullMatch) {
+        const response = await makeGraphQLRequest(stateManager, requestManager, MANGA_FULL_QUERY, { id: Number(mangaFullMatch[1]) }, headers);
+        if (response instanceof Error) {
+            return response;
+        }
+        return response.manga ? mapManga(response.manga) : Error(`Manga ${mangaFullMatch[1]} not found`);
+    }
+    const chapterListMatch = path.match(/^manga\/(\d+)\/chapters$/);
+    if (chapterListMatch) {
+        const mangaId = Number(chapterListMatch[1]);
+        const onlineFetch = queryString.includes("onlineFetch=true");
+        const response = await makeGraphQLRequest(stateManager, requestManager, onlineFetch ? FETCH_CHAPTERS_MUTATION : CHAPTERS_QUERY, { mangaId }, headers);
+        if (response instanceof Error) {
+            return response;
+        }
+        const chapters = onlineFetch ? response.fetchChapters?.chapters : response.chapters.nodes;
+        if (!chapters) {
+            return Error(`No chapters returned for manga ${mangaId}`);
+        }
+        return chapters.map(mapChapter);
+    }
+    const chapterMatch = path.match(/^manga\/(\d+)\/chapter\/(\d+)$/);
+    if (chapterMatch && method === "GET") {
+        const chapter = await getChapterNodeFromSourceOrder(stateManager, requestManager, Number(chapterMatch[1]), Number(chapterMatch[2]));
+        return chapter instanceof Error ? chapter : mapChapter(chapter);
+    }
+    if (chapterMatch && method === "PATCH") {
+        const chapter = await getChapterNodeFromSourceOrder(stateManager, requestManager, Number(chapterMatch[1]), Number(chapterMatch[2]));
+        if (chapter instanceof Error) {
+            return chapter;
+        }
+        const isRead = typeof data === "string" ? data.includes("read=true") : false;
+        const response = await makeGraphQLRequest(stateManager, requestManager, UPDATE_CHAPTER_READ_MUTATION, {
+            id: chapter.id,
+            isRead
+        }, headers);
+        return response instanceof Error ? response : response;
+    }
+    const recentMatch = path.match(/^update\/recentChapters\/(\d+)$/);
+    if (recentMatch) {
+        const page = Number(recentMatch[1]);
+        const pageSize = 50;
+        const response = await makeGraphQLRequest(stateManager, requestManager, RECENTLY_UPDATED_QUERY, {
+            first: pageSize,
+            offset: page * pageSize
+        }, headers);
+        if (response instanceof Error) {
+            return response;
+        }
+        return {
+            page: response.chapters.nodes.map((chapter) => ({
+                chapter: mapChapter(chapter),
+                manga: mapManga(chapter.manga)
+            })),
+            hasNextPage: response.chapters.pageInfo.hasNextPage
+        };
+    }
+    const categoryMatch = path.match(/^category\/(\d+)$/);
+    if (categoryMatch) {
+        const response = await makeGraphQLRequest(stateManager, requestManager, CATEGORY_MANGAS_QUERY, { id: Number(categoryMatch[1]) }, headers);
+        if (response instanceof Error) {
+            return response;
+        }
+        return response.category?.mangas.nodes.map(mapManga) ?? [];
+    }
+    const sourceMatch = path.match(/^source\/([^/]+)\/(popular|latest)\/(\d+)$/);
+    if (sourceMatch) {
+        const sourceId = sourceMatch[1] ?? "";
+        const type = sourceMatch[2] ?? "popular";
+        const page = sourceMatch[3] ?? "1";
+        const response = await makeGraphQLRequest(stateManager, requestManager, FETCH_SOURCE_MANGA_MUTATION, {
+            input: {
+                type: type.toUpperCase(),
+                source: sourceId,
+                page: Number(page)
+            }
+        }, headers);
+        if (response instanceof Error) {
+            return response;
+        }
+        if (!response.fetchSourceManga) {
+            return Error(`No source results returned for ${sourceId}`);
+        }
+        return {
+            mangaList: response.fetchSourceManga.mangas.map(mapManga),
+            hasNextPage: response.fetchSourceManga.hasNextPage
+        };
+    }
+    const sourceSearchMatch = path.match(/^source\/([^/]+)\/search$/);
+    if (sourceSearchMatch) {
+        const params = new URLSearchParams(queryString);
+        const response = await makeGraphQLRequest(stateManager, requestManager, FETCH_SOURCE_MANGA_MUTATION, {
+            input: {
+                type: "SEARCH",
+                source: sourceSearchMatch[1],
+                page: Number(params.get("pageNum") ?? "1"),
+                query: params.get("searchTerm") ?? undefined
+            }
+        }, headers);
+        if (response instanceof Error) {
+            return response;
+        }
+        if (!response.fetchSourceManga) {
+            return Error(`No search results returned for ${sourceSearchMatch[1]}`);
+        }
+        return {
+            mangaList: response.fetchSourceManga.mangas.map(mapManga),
+            hasNextPage: response.fetchSourceManga.hasNextPage
+        };
+    }
+    return Error(`Unsupported endpoint: ${apiEndpoint}`);
 }
 exports.makeRequest = makeRequest;
 // Requests used for the test server button. Could be useful to test connection at other points
@@ -3076,6 +3648,49 @@ const serverAddressSettings = (stateManager, requestManager) => {
                                 })
                             })
                         ]
+                    }),
+                    App.createDUISection({
+                        id: "cloudflareAccessSettings",
+                        header: "Cloudflare Zero Trust",
+                        isHidden: false,
+                        rows: async () => [
+                            App.createDUISwitch({
+                                id: "cloudflareAccessStateSwitch",
+                                label: "Enabled",
+                                value: App.createDUIBinding({
+                                    async get() {
+                                        return await (0, Common_1.getCloudflareAccessState)(stateManager);
+                                    },
+                                    async set(newValue) {
+                                        await (0, Common_1.setCloudflareAccessState)(stateManager, newValue);
+                                    }
+                                })
+                            }),
+                            App.createDUIInputField({
+                                id: "cloudflareAccessClientIdField",
+                                label: "Client ID",
+                                value: App.createDUIBinding({
+                                    async get() {
+                                        return await (0, Common_1.getCloudflareAccessClientId)(stateManager);
+                                    },
+                                    async set(newValue) {
+                                        await (0, Common_1.setCloudflareAccessClientId)(stateManager, newValue);
+                                    }
+                                })
+                            }),
+                            App.createDUISecureInputField({
+                                id: "cloudflareAccessClientSecretField",
+                                label: "Client Secret",
+                                value: App.createDUIBinding({
+                                    async get() {
+                                        return await (0, Common_1.getCloudflareAccessClientSecret)(stateManager);
+                                    },
+                                    async set(newValue) {
+                                        await (0, Common_1.setCloudflareAccessClientSecret)(stateManager, newValue);
+                                    }
+                                })
+                            })
+                        ]
                     })
                 ];
             }
@@ -3364,6 +3979,10 @@ class TachiDesk {
                             authorization: await (0, Common_1.getAuthString)(this.stateManager)
                         };
                     }
+                    request.headers = {
+                        ...request.headers,
+                        ...await (0, Common_1.getCloudflareAccessHeaders)(this.stateManager)
+                    };
                     return request;
                 },
                 interceptResponse: async (response) => {
@@ -3393,15 +4012,33 @@ class TachiDesk {
     }
     // share URL
     getMangaShareUrl(mangaId) {
-        if (this.serverAddress != "") {
+        if (this.serverAddress != "" && mangaId !== Common_1.SERVER_UNAVAILABLE_MANGA_ID) {
             return this.serverAddress + "manga/" + mangaId;
         }
         return "";
     }
     // Manga info -> uses TachiManga interface
     async getMangaDetails(mangaId) {
-        const manga = await (0, Common_1.makeRequest)(this.stateManager, this.requestManager, "manga/" + mangaId);
-        const tags = [
+        if (mangaId === Common_1.SERVER_UNAVAILABLE_MANGA_ID) {
+            return App.createSourceManga({
+                id: mangaId,
+                mangaInfo: App.createMangaInfo({
+                    titles: ["Server Unavailable"],
+                    image: "",
+                    author: "",
+                    artist: "",
+                    desc: "Configure a reachable Suwayomi server in Source Settings.",
+                    status: "UNKNOWN",
+                    tags: []
+                })
+            });
+        }
+        const mangaResponse = await (0, Common_1.makeRequest)(this.stateManager, this.requestManager, "manga/" + mangaId);
+        if (mangaResponse instanceof Error) {
+            throw mangaResponse;
+        }
+        const manga = mangaResponse;
+        const tags = manga.genre.length > 0 ? [
             App.createTagSection({
                 id: "0",
                 label: "genres",
@@ -3410,12 +4047,12 @@ class TachiDesk {
                     label: tag
                 }))
             })
-        ];
+        ] : [];
         return App.createSourceManga({
             id: mangaId,
             mangaInfo: App.createMangaInfo({
                 titles: [manga.title],
-                image: (await (0, Common_1.getServerURL)(this.stateManager)) + manga.thumbnailUrl.slice(1),
+                image: (0, Common_1.buildThumbnailURL)(await (0, Common_1.getServerURL)(this.stateManager), manga.thumbnailUrl),
                 author: manga.author,
                 artist: manga.artist,
                 desc: manga.description,
@@ -3426,8 +4063,23 @@ class TachiDesk {
     }
     // Chapter list, sets the share URl address
     async getChapters(mangaId) {
+        if (mangaId === Common_1.SERVER_UNAVAILABLE_MANGA_ID) {
+            return [
+                App.createChapter({
+                    id: Common_1.SERVER_UNAVAILABLE_CHAPTER_ID,
+                    name: "Configure Server",
+                    chapNum: 1,
+                    time: new Date(0),
+                    sortingIndex: 0
+                })
+            ];
+        }
         // Fetches manga first to use to check last fetched at
-        const manga = await (0, Common_1.makeRequest)(this.stateManager, this.requestManager, "manga/" + mangaId);
+        const mangaResponse = await (0, Common_1.makeRequest)(this.stateManager, this.requestManager, "manga/" + mangaId);
+        if (mangaResponse instanceof Error) {
+            throw mangaResponse;
+        }
+        const manga = mangaResponse;
         let chaptersQueryString = "manga/" + mangaId + "/chapters";
         // If last fetched is older than a day ago, do an online fetch for the manga and the chapter list
         // Online fetch manga to update the manga.lastFetchedAt. Seems redundant but now idea how to improve
@@ -3435,7 +4087,11 @@ class TachiDesk {
             (0, Common_1.makeRequest)(this.stateManager, this.requestManager, "manga/" + mangaId + "?onlineFetch=true");
             chaptersQueryString += "?onlineFetch=true";
         }
-        const chaptersData = await (0, Common_1.makeRequest)(this.stateManager, this.requestManager, chaptersQueryString);
+        const chaptersResponse = await (0, Common_1.makeRequest)(this.stateManager, this.requestManager, chaptersQueryString);
+        if (chaptersResponse instanceof Error) {
+            throw chaptersResponse;
+        }
+        const chaptersData = chaptersResponse;
         this.serverAddress = await (0, Common_1.getServerURL)(this.stateManager);
         const chapters = [];
         for (const chapter of chaptersData) {
@@ -3451,13 +4107,16 @@ class TachiDesk {
     }
     // Provides pages for chapter
     async getChapterDetails(mangaId, chapterId) {
-        const apiURL = await (0, Common_1.getServerAPI)(this.stateManager);
-        const chapterData = await (0, Common_1.makeRequest)(this.stateManager, this.requestManager, "manga/" + mangaId + "/chapter/" + chapterId);
-        const pages = [];
-        // Tachidesk uses page count, so make an array of length pageCount then use the keys of array LOL
-        // pretty much a for i in range() from python
-        for (const pageIndex of Array(chapterData.pageCount).keys()) {
-            pages.push(apiURL + "manga/" + mangaId + "/chapter/" + chapterId + "/page/" + pageIndex);
+        if (mangaId === Common_1.SERVER_UNAVAILABLE_MANGA_ID || chapterId === Common_1.SERVER_UNAVAILABLE_CHAPTER_ID) {
+            return App.createChapterDetails({
+                id: chapterId,
+                mangaId,
+                pages: [Common_1.SERVER_UNAVAILABLE_PAGE]
+            });
+        }
+        const pages = await (0, Common_1.fetchChapterPages)(this.stateManager, this.requestManager, mangaId, chapterId);
+        if (pages instanceof Error) {
+            throw pages;
         }
         return App.createChapterDetails({
             id: chapterId,
@@ -3523,10 +4182,7 @@ class TachiDesk {
                     containsMoreItems: true,
                     type: types_1.HomeSectionType[updatedRowStyle] //Converts String to HomeSectionType
                 }),
-                request: App.createRequest({
-                    url: (await (0, Common_1.getServerAPI)(this.stateManager)) + "update/recentChapters/0",
-                    method: "GET"
-                }),
+                apiEndpoint: "update/recentChapters/0",
                 responseArray: "page", //Refers to array of manga being inside the response's page key
             });
         }
@@ -3555,10 +4211,7 @@ class TachiDesk {
                         containsMoreItems: true,
                         type: types_1.HomeSectionType[categoryRowStyle] //Converts String to HomeSectionType
                     }),
-                    request: App.createRequest({
-                        url: (await (0, Common_1.getServerAPI)(this.stateManager)) + "category/" + categoryId,
-                        method: "GET"
-                    }),
+                    apiEndpoint: "category/" + categoryId,
                     responseArray: "root" //Refers to array of manga in the response itself
                 });
             }
@@ -3577,10 +4230,7 @@ class TachiDesk {
                         containsMoreItems: true,
                         type: types_1.HomeSectionType[sourceRowStyle] //Converts String to HomeSectionType
                     }),
-                    request: App.createRequest({
-                        url: (await (0, Common_1.getServerAPI)(this.stateManager)) + "source/" + sourceId + "/popular/1",
-                        method: "GET"
-                    }),
+                    apiEndpoint: "source/" + sourceId + "/popular/1",
                     responseArray: "mangaList" //Refers to array of manga being inside the response's mangaList key
                 });
                 if ((0, Common_1.getSourceFromId)(serverSources, sourceId).supportsLatest) {
@@ -3591,10 +4241,7 @@ class TachiDesk {
                             containsMoreItems: true,
                             type: types_1.HomeSectionType[sourceRowStyle] //Converts String to HomeSectionType
                         }),
-                        request: App.createRequest({
-                            url: (await (0, Common_1.getServerAPI)(this.stateManager)) + "source/" + sourceId + "/latest/1",
-                            method: "GET"
-                        }),
+                        apiEndpoint: "source/" + sourceId + "/latest/1",
                         responseArray: "mangaList" //Refers to array of manga being inside the response's mangaList key
                     });
                 }
@@ -3603,8 +4250,10 @@ class TachiDesk {
         // Run Promises
         for (const section of sections) {
             sectionCallback(section.section);
-            promises.push(this.requestManager.schedule(section.request, 1).then(async (response) => {
-                const json = JSON.parse(response.data ?? "");
+            promises.push((0, Common_1.makeRequest)(this.stateManager, this.requestManager, section.apiEndpoint).then(async (json) => {
+                if (json instanceof Error) {
+                    return;
+                }
                 const tiles = [];
                 // Uses the responseAray to get manga list
                 let data;
@@ -3631,7 +4280,7 @@ class TachiDesk {
                     tiles.push(App.createPartialSourceManga({
                         title: manga.title,
                         mangaId: manga.id.toString(),
-                        image: (await (0, Common_1.getServerURL)(this.stateManager)) + manga.thumbnailUrl.slice(1)
+                        image: (0, Common_1.buildThumbnailURL)(await (0, Common_1.getServerURL)(this.stateManager), manga.thumbnailUrl)
                     }));
                 }
                 section.section.items = tiles;
@@ -3655,12 +4304,18 @@ class TachiDesk {
                 page = metadata?.page ?? 1;
                 apiEndpoint = "update/recentChapters/" + page;
                 response = (await (0, Common_1.makeRequest)(this.stateManager, this.requestManager, apiEndpoint));
+                if (response instanceof Error) {
+                    response = { page: [], hasNextPage: false };
+                }
                 tileData = response.page;
                 break;
             case "category":
                 page = metadata?.page ?? undefined; // Categories don't have pages
                 apiEndpoint = "category/" + sourceId;
                 response = (await (0, Common_1.makeRequest)(this.stateManager, this.requestManager, apiEndpoint));
+                if (response instanceof Error) {
+                    response = [];
+                }
                 tileData = response;
                 break;
             case "popular":
@@ -3669,6 +4324,9 @@ class TachiDesk {
                 page = metadata?.page ?? 1;
                 apiEndpoint = "source/" + sourceId + "/" + type + "/" + page;
                 response = (await (0, Common_1.makeRequest)(this.stateManager, this.requestManager, apiEndpoint));
+                if (response instanceof Error) {
+                    response = { mangaList: [], hasNextPage: false };
+                }
                 tileData = response.mangaList;
                 break;
         }
@@ -3684,7 +4342,7 @@ class TachiDesk {
             tiles.push(App.createPartialSourceManga({
                 title: manga.title,
                 mangaId: manga.id.toString(),
-                image: (await (0, Common_1.getServerURL)(this.stateManager)) + manga.thumbnailUrl.slice(1)
+                image: (0, Common_1.buildThumbnailURL)(await (0, Common_1.getServerURL)(this.stateManager), manga.thumbnailUrl)
             }));
         }
         // Pushes the page number and results along
@@ -3712,6 +4370,7 @@ class TachiDesk {
             paramsString = "?" + paramsList.join("&");
         }
         const tiles = [];
+        let hadError = false;
         for (const source of selectedSources) {
             if (page !== 1) {
                 if (!meta_sources[source])
@@ -3721,17 +4380,26 @@ class TachiDesk {
             // If request result is an error (evaluated by makeRequest), then skip source
             // This stops individual sources from messing up the whole search process.
             if (mangaResults instanceof Error) {
+                hadError = true;
                 continue;
             }
             for (const manga of mangaResults.mangaList) {
                 tiles.push(App.createPartialSourceManga({
                     title: manga.title,
                     mangaId: String(manga.id),
-                    image: (await (0, Common_1.getServerURL)(this.stateManager)) + manga.thumbnailUrl.slice(1),
+                    image: (0, Common_1.buildThumbnailURL)(await (0, Common_1.getServerURL)(this.stateManager), manga.thumbnailUrl),
                     subtitle: (0, Common_1.getSourceNameFromId)(serverSources, source)
                 }));
             }
             meta_sources[source] = mangaResults.hasNextPage;
+        }
+        if (tiles.length === 0 && hadError) {
+            tiles.push(App.createPartialSourceManga({
+                title: "Server Unavailable",
+                mangaId: Common_1.SERVER_UNAVAILABLE_MANGA_ID,
+                image: "",
+                subtitle: "Check Source Settings"
+            }));
         }
         metadata = tiles.length !== 0 ? { page: page + 1, sources: meta_sources } : undefined;
         return App.createPagedResults({
@@ -3741,8 +4409,15 @@ class TachiDesk {
     }
     // This method is only used in 0.9, so it may or may not be completely correct, since it's not been tested.
     async getMangaProgress(mangaId) {
+        if (mangaId === Common_1.SERVER_UNAVAILABLE_MANGA_ID) {
+            return undefined;
+        }
         console.log(`getting manga progress for ${mangaId}`);
-        const manga = await (0, Common_1.makeRequest)(this.stateManager, this.requestManager, "manga/" + mangaId + "/full");
+        const mangaResponse = await (0, Common_1.makeRequest)(this.stateManager, this.requestManager, "manga/" + mangaId + "/full");
+        if (mangaResponse instanceof Error) {
+            return undefined;
+        }
+        const manga = mangaResponse;
         console.log(`manga ${mangaId} progress: ${manga}`);
         if (!manga.lastChapterRead) {
             return undefined;
@@ -3767,9 +4442,16 @@ class TachiDesk {
         const chapterReadActions = await actionQueue.queuedChapterReadActions();
         for (const readAction of chapterReadActions) {
             try {
+                if (readAction.mangaId === Common_1.SERVER_UNAVAILABLE_MANGA_ID) {
+                    await actionQueue.discardChapterReadAction(readAction);
+                    continue;
+                }
                 let urlPath = "manga/" + readAction.mangaId + "/chapter/" + readAction.sourceChapterId;
                 console.log(`marking mangaId ${readAction.mangaId} with sourceChapterId ${readAction.sourceChapterId} as read`);
-                await (0, Common_1.makeRequest)(this.stateManager, this.requestManager, urlPath, 'PATCH', 'read=true');
+                const response = await (0, Common_1.makeRequest)(this.stateManager, this.requestManager, urlPath, 'PATCH', 'read=true');
+                if (response instanceof Error) {
+                    throw response;
+                }
                 await actionQueue.discardChapterReadAction(readAction);
             }
             catch (error) {
