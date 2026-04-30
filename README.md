@@ -19,6 +19,12 @@ This  [Paperback](https://paperback.moe/) extension lets you use Tachiyomi exten
 - On Paperback head to Tachidesk extension settings and set the server ip:port (ex: http://192.168.1.10:4567)
 - All set! you can now enjoy Tachiyomi extensions on iOS
 
+## Local iteration
+- Copy `.env.example` to `.env`.
+- Set `TACHIDESK_SERVER_URL` to the server you want local `bundle`, `serve`, and `test` runs to target.
+- If the server is behind Cloudflare Zero Trust, set `TACHIDESK_CLOUDFLARE_ACCESS_CLIENT_ID` and `TACHIDESK_CLOUDFLARE_ACCESS_CLIENT_SECRET`.
+- `npm run bundle`, `npm run serve`, and `npm test` load `.env` automatically for local runs.
+
 ### How to report a Bug
 1) Open an Issue [here](https://github.com/Suwayomi/tachidesk-paperback-ext/issues/new) on Github, describe in details the error and how to reproduce it and attach a log exported from paperback (preferred way).
 2) You can message me on Discord at Alles#8932
