@@ -8,6 +8,7 @@ const { spawnSync } = require("child_process");
 const repoRoot = path.resolve(__dirname, "..");
 const bundlesDir = path.join(repoRoot, "bundles");
 const versioningPath = path.join(bundlesDir, "versioning.json");
+const postprocessPath = path.join(__dirname, "paperback-postprocess.js");
 
 function resolveToolchainCli() {
     const cliDirectory = path.join(repoRoot, "node_modules", "@paperback", "toolchain", "bin");
@@ -30,6 +31,16 @@ function buildSources() {
 
     if (result.status !== 0) {
         process.exit(result.status ?? 1);
+    }
+
+    const postprocess = spawnSync(process.execPath, [postprocessPath], {
+        cwd: repoRoot,
+        stdio: "inherit",
+        env: process.env,
+    });
+
+    if (postprocess.status !== 0) {
+        process.exit(postprocess.status ?? 1);
     }
 }
 

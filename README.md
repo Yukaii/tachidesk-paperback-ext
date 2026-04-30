@@ -15,7 +15,7 @@ This  [Paperback](https://paperback.moe/) extension lets you use Tachiyomi exten
 -   Setup a Tachidesk server by following this [guide](https://github.com/Suwayomi/Tachidesk-Server#downloading-and-running-the-app).
 - Make sure the instance is available through the browser by connecting to the server ip:port (usually runs on port 4567)
 - Head to Tachidesk extensions page and install your favorite extensions.
-- Now install the this extension on your iOS device by clicking [here](https://suwayomi.github.io/tachidesk-paperback-ext/)
+- Now install this extension on your iOS device by clicking [here](https://yukaii.tw/tachidesk-paperback-ext/)
 - On Paperback head to Tachidesk extension settings and set the server ip:port (ex: http://192.168.1.10:4567)
 - All set! you can now enjoy Tachiyomi extensions on iOS
 
@@ -26,7 +26,7 @@ This  [Paperback](https://paperback.moe/) extension lets you use Tachiyomi exten
 - `npm run bundle`, `npm run serve`, and `npm test` load `.env` automatically for local runs.
 
 ### How to report a Bug
-1) Open an Issue [here](https://github.com/Suwayomi/tachidesk-paperback-ext/issues/new) on Github, describe in details the error and how to reproduce it and attach a log exported from paperback (preferred way).
+1) Open an Issue [here](https://github.com/Yukaii/tachidesk-paperback-ext/issues/new) on Github, describe in details the error and how to reproduce it and attach a log exported from paperback (preferred way).
 2) You can message me on Discord at Alles#8932
 3) You can message me on [Telegram](https://t.me/Alz_8bit) 
 

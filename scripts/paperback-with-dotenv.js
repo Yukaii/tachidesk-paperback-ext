@@ -74,6 +74,29 @@ child.on("exit", (code, signal) => {
         return;
     }
 
+    if (code === 0 && process.argv[2] === "bundle") {
+        const postprocess = spawn(process.execPath, [path.join(__dirname, "paperback-postprocess.js")], {
+            stdio: "inherit",
+            env: process.env,
+        });
+
+        postprocess.on("exit", (postprocessCode, postprocessSignal) => {
+            if (postprocessSignal) {
+                process.kill(process.pid, postprocessSignal);
+                return;
+            }
+
+            process.exit(postprocessCode ?? 1);
+        });
+
+        postprocess.on("error", (error) => {
+            console.error(error);
+            process.exit(1);
+        });
+
+        return;
+    }
+
     process.exit(code ?? 1);
 });
 
