@@ -35,7 +35,34 @@ if (fs.existsSync(dotenvPath)) {
     }
 }
 
-const cliPath = path.join(repoRoot, "node_modules", "@paperback", "toolchain", "bin", "run");
+const cliDirectory = path.join(repoRoot, "node_modules", "@paperback", "toolchain", "bin");
+const cliPath = fs.existsSync(path.join(cliDirectory, "run.js"))
+    ? path.join(cliDirectory, "run.js")
+    : path.join(cliDirectory, "run");
+
+if (process.argv[2] === "test") {
+    const child = spawn(process.execPath, [path.join(__dirname, "paperback-test.js")], {
+        stdio: "inherit",
+        env: process.env,
+    });
+
+    child.on("exit", (code, signal) => {
+        if (signal) {
+            process.kill(process.pid, signal);
+            return;
+        }
+
+        process.exit(code ?? 1);
+    });
+
+    child.on("error", (error) => {
+        console.error(error);
+        process.exit(1);
+    });
+
+    return;
+}
+
 const child = spawn(process.execPath, [cliPath, ...process.argv.slice(2)], {
     stdio: "inherit",
     env: process.env,

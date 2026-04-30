@@ -1,7 +1,7 @@
 import {
     RequestManager,
     SourceStateManager
-} from '@paperback/types'
+} from '@paperback/types/lib/compat/0.8/index.js'
 
 export function serverUnavailableMangaTiles() {
     return [
@@ -1230,7 +1230,7 @@ export async function fetchServerSources(stateManager: SourceStateManager, reque
     const fetchedSources = await makeRequest(stateManager, requestManager, "source/list")
 
     if (fetchedSources instanceof Error) {
-        throw new Error("Failed to fetch sources.")
+        throw fetchedSources
     }
 
     fetchedSources.forEach((source: tachiSources) => {
