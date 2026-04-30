@@ -44,7 +44,6 @@ import {
     getMangaPerRow,
     getSelectedCategories,
     getSelectedSources,
-    getServerAPI,
     getServerCategories,
     getServerSources,
     getServerURL,
@@ -55,6 +54,7 @@ import {
     getUpdatedRowState,
     getUpdatedRowStyle,
     makeRequest,
+    fetchChapterPages,
     serverUnavailableMangaTiles,
     setServerCategories,
     setServerSources,
@@ -203,15 +203,10 @@ export class TachiDesk implements PaperbackExtensionBase, MangaProgressProviding
 
     // Provides pages for chapter
     async getChapterDetails(mangaId: string, chapterId: string): Promise<ChapterDetails> {
-        const apiURL = await getServerAPI(this.stateManager)
-        const chapterData: tachiChapter = await makeRequest(this.stateManager, this.requestManager, "manga/" + mangaId + "/chapter/" + chapterId)
+        const pages = await fetchChapterPages(this.stateManager, this.requestManager, mangaId, chapterId)
 
-        const pages: string[] = []
-
-        // Tachidesk uses page count, so make an array of length pageCount then use the keys of array LOL
-        // pretty much a for i in range() from python
-        for (const pageIndex of Array(chapterData.pageCount).keys()) {
-            pages.push(apiURL + "manga/" + mangaId + "/chapter/" + chapterId + "/page/" + pageIndex)
+        if (pages instanceof Error) {
+            throw pages
         }
 
         return App.createChapterDetails({
@@ -290,10 +285,7 @@ export class TachiDesk implements PaperbackExtensionBase, MangaProgressProviding
                     containsMoreItems: true,
                     type: HomeSectionType[updatedRowStyle as keyof typeof HomeSectionType] //Converts String to HomeSectionType
                 }),
-                request: App.createRequest({
-                    url: (await getServerAPI(this.stateManager)) + "update/recentChapters/0",
-                    method: "GET"
-                }),
+                apiEndpoint: "update/recentChapters/0",
                 responseArray: "page", //Refers to array of manga being inside the response's page key
             })
         }
@@ -325,10 +317,7 @@ export class TachiDesk implements PaperbackExtensionBase, MangaProgressProviding
                         containsMoreItems: true,
                         type: HomeSectionType[categoryRowStyle as keyof typeof HomeSectionType] //Converts String to HomeSectionType
                     }),
-                    request: App.createRequest({
-                        url: (await getServerAPI(this.stateManager)) + "category/" + categoryId,
-                        method: "GET"
-                    }),
+                    apiEndpoint: "category/" + categoryId,
                     responseArray: "root" //Refers to array of manga in the response itself
                 })
             }
@@ -348,10 +337,7 @@ export class TachiDesk implements PaperbackExtensionBase, MangaProgressProviding
                         containsMoreItems: true,
                         type: HomeSectionType[sourceRowStyle as keyof typeof HomeSectionType] //Converts String to HomeSectionType
                     }),
-                    request: App.createRequest({
-                        url: (await getServerAPI(this.stateManager)) + "source/" + sourceId + "/popular/1",
-                        method: "GET"
-                    }),
+                    apiEndpoint: "source/" + sourceId + "/popular/1",
                     responseArray: "mangaList" //Refers to array of manga being inside the response's mangaList key
                 })
 
@@ -363,10 +349,7 @@ export class TachiDesk implements PaperbackExtensionBase, MangaProgressProviding
                             containsMoreItems: true,
                             type: HomeSectionType[sourceRowStyle as keyof typeof HomeSectionType] //Converts String to HomeSectionType
                         }),
-                        request: App.createRequest({
-                            url: (await getServerAPI(this.stateManager)) + "source/" + sourceId + "/latest/1",
-                            method: "GET"
-                        }),
+                        apiEndpoint: "source/" + sourceId + "/latest/1",
                         responseArray: "mangaList" //Refers to array of manga being inside the response's mangaList key
                     })
                 }
@@ -378,8 +361,10 @@ export class TachiDesk implements PaperbackExtensionBase, MangaProgressProviding
             sectionCallback(section.section)
 
             promises.push(
-                this.requestManager.schedule(section.request, 1).then(async response => {
-                    const json = JSON.parse(response.data ?? "")
+                makeRequest(this.stateManager, this.requestManager, section.apiEndpoint).then(async json => {
+                    if (json instanceof Error) {
+                        return
+                    }
                     const tiles = []
 
                     // Uses the responseAray to get manga list

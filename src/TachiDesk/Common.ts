@@ -44,7 +44,7 @@ export const SOURCE_ROW_STYLE_KEY = "sourceRowStyle"
 
 // Defaults
 export const DEFAULT_SERVER_URL = "http://127.0.0.1:4567/";
-export const DEFAULT_API_ENDPOINT = "api/v1/";
+export const DEFAULT_API_ENDPOINT = "api/graphql";
 export const DEFAULT_SERVER_API = DEFAULT_SERVER_URL + DEFAULT_API_ENDPOINT;
 export const DEFAULT_AUTH_STATE = false;
 export const DEFAULT_AUTH_STRING = "";
@@ -75,7 +75,7 @@ export const DEFAULT_SERVER_SOURCE: tachiSources = {
     id: "0",
     name: "Local source",
     lang: "localsourcelang",
-    iconUrl: "/api/v1/extension/icon/localSource",
+    iconUrl: "",
     supportsLatest: true,
     isConfigurable: false,
     isNsfw: false,
@@ -217,6 +217,271 @@ export interface tachiChapter {
 
 // ! Query Interfaces End
 
+const ABOUT_SERVER_QUERY = `
+    query PAPERBACK_ABOUT_SERVER {
+        aboutServer {
+            buildTime
+            buildType
+            discord
+            github
+            name
+            version
+        }
+    }
+`
+
+const CATEGORY_LIST_QUERY = `
+    query PAPERBACK_CATEGORY_LIST {
+        categories(order: [{ by: ORDER, byType: ASC }]) {
+            nodes {
+                id
+                name
+                default
+                order
+                includeInUpdate
+                meta {
+                    key
+                    value
+                }
+                mangas {
+                    totalCount
+                }
+            }
+        }
+    }
+`
+
+const SOURCE_LIST_QUERY = `
+    query PAPERBACK_SOURCE_LIST {
+        sources {
+            nodes {
+                id
+                name
+                displayName
+                lang
+                iconUrl
+                supportsLatest
+                isConfigurable
+                isNsfw
+            }
+        }
+    }
+`
+
+const MANGA_FIELDS = `
+    id
+    sourceId
+    url
+    realUrl
+    title
+    thumbnailUrl
+    thumbnailUrlLastFetched
+    initialized
+    artist
+    author
+    description
+    genre
+    status
+    inLibrary
+    inLibraryAt
+    updateStrategy
+    lastFetchedAt
+    chaptersLastFetchedAt
+    unreadCount
+    downloadCount
+    age
+    chaptersAge
+    meta {
+        key
+        value
+    }
+    chapters {
+        totalCount
+    }
+    source {
+        id
+        name
+        displayName
+        lang
+        iconUrl
+        supportsLatest
+        isConfigurable
+        isNsfw
+    }
+`
+
+const MANGA_QUERY = `
+    query PAPERBACK_MANGA($id: Int!) {
+        manga(id: $id) {
+            ${MANGA_FIELDS}
+        }
+    }
+`
+
+const FETCH_MANGA_MUTATION = `
+    mutation PAPERBACK_FETCH_MANGA($id: Int!) {
+        fetchManga(input: { id: $id }) {
+            manga {
+                ${MANGA_FIELDS}
+            }
+        }
+    }
+`
+
+const MANGA_FULL_QUERY = `
+    query PAPERBACK_MANGA_FULL($id: Int!) {
+        manga(id: $id) {
+            ${MANGA_FIELDS}
+            lastReadChapter {
+                id
+                chapterNumber
+                sourceOrder
+                name
+                uploadDate
+                scanlator
+                mangaId
+                isRead
+                isBookmarked
+                lastPageRead
+                lastReadAt
+                fetchedAt
+                realUrl
+                isDownloaded
+                pageCount
+                url
+            }
+        }
+    }
+`
+
+const CHAPTER_FIELDS = `
+    id
+    url
+    name
+    uploadDate
+    chapterNumber
+    scanlator
+    mangaId
+    isRead
+    isBookmarked
+    lastPageRead
+    lastReadAt
+    sourceOrder
+    fetchedAt
+    realUrl
+    isDownloaded
+    pageCount
+    meta {
+        key
+        value
+    }
+`
+
+const CHAPTERS_QUERY = `
+    query PAPERBACK_CHAPTERS($mangaId: Int!) {
+        chapters(
+            filter: { mangaId: { equalTo: $mangaId } }
+            order: [{ by: SOURCE_ORDER, byType: ASC }]
+        ) {
+            nodes {
+                ${CHAPTER_FIELDS}
+            }
+        }
+    }
+`
+
+const FETCH_CHAPTERS_MUTATION = `
+    mutation PAPERBACK_FETCH_CHAPTERS($mangaId: Int!) {
+        fetchChapters(input: { mangaId: $mangaId }) {
+            chapters {
+                ${CHAPTER_FIELDS}
+            }
+        }
+    }
+`
+
+const CHAPTER_BY_SOURCE_ORDER_QUERY = `
+    query PAPERBACK_CHAPTER_BY_SOURCE_ORDER($mangaId: Int!, $sourceOrder: Int!) {
+        chapters(
+            filter: {
+                mangaId: { equalTo: $mangaId }
+                sourceOrder: { equalTo: $sourceOrder }
+            }
+            first: 1
+        ) {
+            nodes {
+                ${CHAPTER_FIELDS}
+            }
+        }
+    }
+`
+
+const FETCH_CHAPTER_PAGES_MUTATION = `
+    mutation PAPERBACK_FETCH_CHAPTER_PAGES($chapterId: Int!) {
+        fetchChapterPages(input: { chapterId: $chapterId }) {
+            pages
+        }
+    }
+`
+
+const RECENTLY_UPDATED_QUERY = `
+    query PAPERBACK_RECENTLY_UPDATED($first: Int!, $offset: Int!) {
+        chapters(
+            filter: { inLibrary: { equalTo: true } }
+            order: [
+                { by: FETCHED_AT, byType: DESC }
+                { by: SOURCE_ORDER, byType: DESC }
+            ]
+            first: $first
+            offset: $offset
+        ) {
+            nodes {
+                ${CHAPTER_FIELDS}
+                manga {
+                    ${MANGA_FIELDS}
+                }
+            }
+            pageInfo {
+                hasNextPage
+            }
+        }
+    }
+`
+
+const CATEGORY_MANGAS_QUERY = `
+    query PAPERBACK_CATEGORY_MANGAS($id: Int!) {
+        category(id: $id) {
+            mangas {
+                nodes {
+                    ${MANGA_FIELDS}
+                }
+            }
+        }
+    }
+`
+
+const FETCH_SOURCE_MANGA_MUTATION = `
+    mutation PAPERBACK_FETCH_SOURCE_MANGA($input: FetchSourceMangaInput!) {
+        fetchSourceManga(input: $input) {
+            hasNextPage
+            mangas {
+                ${MANGA_FIELDS}
+            }
+        }
+    }
+`
+
+const UPDATE_CHAPTER_READ_MUTATION = `
+    mutation PAPERBACK_UPDATE_CHAPTER_READ($id: Int!, $isRead: Boolean!) {
+        updateChapter(input: { id: $id, patch: { isRead: $isRead } }) {
+            chapter {
+                id
+                isRead
+            }
+        }
+    }
+`
+
 // ! Reset Settings Begin
 export async function resetSettings(stateManager: SourceStateManager) {
     await stateManager.store(SERVER_URL_KEY, DEFAULT_SERVER_URL)
@@ -353,52 +618,470 @@ export async function getCloudflareAccessHeaders(stateManager: SourceStateManage
 // ! Cloudflare Access End
 
 // ! Requests
-export async function makeRequest(stateManager: SourceStateManager, requestManager: RequestManager, apiEndpoint: string, method = "GET", data?: Record<string, string> | string, headers: Record<string, string> = {}) {
+function numberOrZero(value: any): number {
+    if (value === null || value === undefined || value === "") {
+        return 0
+    }
+
+    const parsed = Number(value)
+    return Number.isFinite(parsed) ? parsed : 0
+}
+
+function mapSource(source: any): tachiSources {
+    if (!source) {
+        return DEFAULT_SERVER_SOURCE
+    }
+
+    return {
+        id: source.id,
+        name: source.name,
+        lang: source.lang,
+        iconUrl: source.iconUrl ?? "",
+        supportsLatest: source.supportsLatest ?? false,
+        isConfigurable: source.isConfigurable ?? false,
+        isNsfw: source.isNsfw ?? false,
+        displayName: source.displayName ?? source.name
+    }
+}
+
+function mapCategory(category: any): tachiCategory {
+    return {
+        id: category.id,
+        order: category.order,
+        name: category.name,
+        default: category.default,
+        size: category.mangas?.totalCount ?? 0,
+        includeInUpdate: category.includeInUpdate ?? "EXCLUDE",
+        meta: category.meta ?? []
+    }
+}
+
+function mapChapter(chapter: any): tachiChapter {
+    return {
+        id: chapter.id,
+        url: chapter.url ?? "",
+        name: chapter.name,
+        uploadDate: numberOrZero(chapter.uploadDate),
+        chapterNumber: chapter.chapterNumber,
+        scanlator: chapter.scanlator ?? "",
+        mangaId: chapter.mangaId,
+        read: chapter.isRead,
+        bookmarked: chapter.isBookmarked,
+        lastPageRead: chapter.lastPageRead ?? 0,
+        lastReadAt: numberOrZero(chapter.lastReadAt),
+        index: chapter.sourceOrder,
+        fetchedAt: numberOrZero(chapter.fetchedAt),
+        realUrl: chapter.realUrl ?? "",
+        downloaded: chapter.isDownloaded,
+        pageCount: chapter.pageCount ?? 0,
+        chapterCount: 0,
+        meta: chapter.meta ?? []
+    }
+}
+
+function mapManga(manga: any): tachiManga {
+    return {
+        id: manga.id,
+        sourceId: manga.sourceId,
+        url: manga.url ?? "",
+        title: manga.title,
+        thumbnailUrl: manga.thumbnailUrl ?? "",
+        thumbnailUrlLastFetched: numberOrZero(manga.thumbnailUrlLastFetched),
+        initialized: manga.initialized,
+        artist: manga.artist ?? "",
+        author: manga.author ?? "",
+        description: manga.description ?? "",
+        genre: manga.genre ?? [],
+        status: manga.status ?? "",
+        inLibrary: manga.inLibrary,
+        inLibraryAt: numberOrZero(manga.inLibraryAt),
+        source: mapSource(manga.source),
+        meta: manga.meta ?? [],
+        realUrl: manga.realUrl ?? "",
+        lastFetchedAt: numberOrZero(manga.lastFetchedAt),
+        chaptersLastFetchedAt: numberOrZero(manga.chaptersLastFetchedAt),
+        updateStrategy: manga.updateStrategy ?? "",
+        freshData: true,
+        unreadCount: manga.unreadCount ?? 0,
+        downloadCount: manga.downloadCount ?? 0,
+        chapterCount: manga.chapters?.totalCount ?? 0,
+        lastReadAt: numberOrZero(manga.lastReadChapter?.lastReadAt),
+        lastChapterRead: manga.lastReadChapter ? mapChapter(manga.lastReadChapter) : undefined,
+        age: numberOrZero(manga.age),
+        chaptersAge: numberOrZero(manga.chaptersAge)
+    }
+}
+
+async function makeGraphQLRequest<T>(
+    stateManager: SourceStateManager,
+    requestManager: RequestManager,
+    query: string,
+    variables: Record<string, any> = {},
+    headers: Record<string, string> = {}
+): Promise<T | Error> {
     const serverAPI = await getServerAPI(stateManager)
 
     const request = App.createRequest({
-        url: serverAPI + apiEndpoint,
-        method,
-        data,
-        headers
+        url: serverAPI,
+        method: "POST",
+        data: JSON.stringify({
+            query,
+            variables
+        }),
+        headers: {
+            "content-type": "application/json",
+            "accept": "application/json",
+            ...headers
+        }
     })
 
-    let response;
-    let responseStatus;
-    let responseData;
+    let response
 
-    // Checks if the request actually went out
     try {
-        response = await requestManager.schedule(request, 0);
+        response = await requestManager.schedule(request, 0)
     }
     catch (error: any) {
-        return new Error(serverAPI + apiEndpoint)
+        return new Error(serverAPI)
     }
 
-    // Checks if we got a response, then checks if we got a good response
-    try {
-        responseStatus = response?.status
-    }
-    catch (error: any) {
-        return Error("Couldn't connect to server.")
-    }
+    const responseStatus = response?.status
+
     if (responseStatus == 401) {
         return Error("Unauthorized" + " " + JSON.stringify(await getAuthString(stateManager)))
     }
 
-    if (responseStatus != 200) {
-        return Error("Your query is invalid. " + JSON.stringify(response?.status))
+    if (!responseStatus || responseStatus < 200 || responseStatus >= 300) {
+        return Error("Your query is invalid. " + JSON.stringify(responseStatus))
     }
 
-    // Checks for garbage data
+    let responseData
+
     try {
         responseData = JSON.parse(response.data ?? "")
     }
     catch (error: any) {
-        return Error(apiEndpoint)
+        return Error("Invalid GraphQL response")
     }
 
-    return responseData
+    if (responseData.errors?.length) {
+        return Error(responseData.errors[0]?.message ?? "GraphQL error")
+    }
+
+    return responseData.data as T
+}
+
+async function getChapterNodeFromSourceOrder(
+    stateManager: SourceStateManager,
+    requestManager: RequestManager,
+    mangaId: number,
+    sourceOrder: number
+): Promise<any | Error> {
+    const response = await makeGraphQLRequest<{ chapters: { nodes: any[] } }>(
+        stateManager,
+        requestManager,
+        CHAPTER_BY_SOURCE_ORDER_QUERY,
+        {
+            mangaId,
+            sourceOrder
+        }
+    )
+
+    if (response instanceof Error) {
+        return response
+    }
+
+    const chapter = response.chapters.nodes[0]
+    if (!chapter) {
+        return Error(`Chapter ${sourceOrder} not found for manga ${mangaId}`)
+    }
+
+    return chapter
+}
+
+export async function fetchChapterPages(
+    stateManager: SourceStateManager,
+    requestManager: RequestManager,
+    mangaId: string,
+    chapterId: string
+): Promise<string[] | Error> {
+    const chapter = await getChapterNodeFromSourceOrder(
+        stateManager,
+        requestManager,
+        Number(mangaId),
+        Number(chapterId)
+    )
+
+    if (chapter instanceof Error) {
+        return chapter
+    }
+
+    const response = await makeGraphQLRequest<{ fetchChapterPages: { pages: string[] } }>(
+        stateManager,
+        requestManager,
+        FETCH_CHAPTER_PAGES_MUTATION,
+        {
+            chapterId: chapter.id
+        }
+    )
+
+    if (response instanceof Error) {
+        return response
+    }
+
+    return response.fetchChapterPages.pages
+}
+
+export async function makeRequest(stateManager: SourceStateManager, requestManager: RequestManager, apiEndpoint: string, method = "GET", data?: Record<string, string> | string, headers: Record<string, string> = {}) {
+    const endpointParts = apiEndpoint.split("?")
+    const path = endpointParts[0] ?? ""
+    const queryString = endpointParts[1] ?? ""
+
+    if (path === "settings/about/") {
+        const response = await makeGraphQLRequest<{ aboutServer: any }>(
+            stateManager,
+            requestManager,
+            ABOUT_SERVER_QUERY,
+            {},
+            headers
+        )
+
+        return response instanceof Error ? response : response.aboutServer
+    }
+
+    if (path === "category/") {
+        const response = await makeGraphQLRequest<{ categories: { nodes: any[] } }>(
+            stateManager,
+            requestManager,
+            CATEGORY_LIST_QUERY,
+            {},
+            headers
+        )
+
+        return response instanceof Error ? response : response.categories.nodes.map(mapCategory)
+    }
+
+    if (path === "source/list") {
+        const response = await makeGraphQLRequest<{ sources: { nodes: any[] } }>(
+            stateManager,
+            requestManager,
+            SOURCE_LIST_QUERY,
+            {},
+            headers
+        )
+
+        return response instanceof Error ? response : response.sources.nodes.map(mapSource)
+    }
+
+    const mangaMatch = path.match(/^manga\/(\d+)$/)
+    if (mangaMatch) {
+        const id = Number(mangaMatch[1])
+        const onlineFetch = queryString.includes("onlineFetch=true")
+        const response = await makeGraphQLRequest<any>(
+            stateManager,
+            requestManager,
+            onlineFetch ? FETCH_MANGA_MUTATION : MANGA_QUERY,
+            { id },
+            headers
+        )
+
+        if (response instanceof Error) {
+            return response
+        }
+
+        const manga = onlineFetch ? response.fetchManga?.manga : response.manga
+        return manga ? mapManga(manga) : Error(`Manga ${id} not found`)
+    }
+
+    const mangaFullMatch = path.match(/^manga\/(\d+)\/full$/)
+    if (mangaFullMatch) {
+        const response = await makeGraphQLRequest<{ manga: any }>(
+            stateManager,
+            requestManager,
+            MANGA_FULL_QUERY,
+            { id: Number(mangaFullMatch[1]) },
+            headers
+        )
+
+        if (response instanceof Error) {
+            return response
+        }
+
+        return response.manga ? mapManga(response.manga) : Error(`Manga ${mangaFullMatch[1]} not found`)
+    }
+
+    const chapterListMatch = path.match(/^manga\/(\d+)\/chapters$/)
+    if (chapterListMatch) {
+        const mangaId = Number(chapterListMatch[1])
+        const onlineFetch = queryString.includes("onlineFetch=true")
+        const response = await makeGraphQLRequest<any>(
+            stateManager,
+            requestManager,
+            onlineFetch ? FETCH_CHAPTERS_MUTATION : CHAPTERS_QUERY,
+            { mangaId },
+            headers
+        )
+
+        if (response instanceof Error) {
+            return response
+        }
+
+        const chapters = onlineFetch ? response.fetchChapters?.chapters : response.chapters.nodes
+        if (!chapters) {
+            return Error(`No chapters returned for manga ${mangaId}`)
+        }
+        return chapters.map(mapChapter)
+    }
+
+    const chapterMatch = path.match(/^manga\/(\d+)\/chapter\/(\d+)$/)
+    if (chapterMatch && method === "GET") {
+        const chapter = await getChapterNodeFromSourceOrder(
+            stateManager,
+            requestManager,
+            Number(chapterMatch[1]),
+            Number(chapterMatch[2])
+        )
+
+        return chapter instanceof Error ? chapter : mapChapter(chapter)
+    }
+
+    if (chapterMatch && method === "PATCH") {
+        const chapter = await getChapterNodeFromSourceOrder(
+            stateManager,
+            requestManager,
+            Number(chapterMatch[1]),
+            Number(chapterMatch[2])
+        )
+
+        if (chapter instanceof Error) {
+            return chapter
+        }
+
+        const isRead = typeof data === "string" ? data.includes("read=true") : false
+        const response = await makeGraphQLRequest(
+            stateManager,
+            requestManager,
+            UPDATE_CHAPTER_READ_MUTATION,
+            {
+                id: chapter.id,
+                isRead
+            },
+            headers
+        )
+
+        return response instanceof Error ? response : response
+    }
+
+    const recentMatch = path.match(/^update\/recentChapters\/(\d+)$/)
+    if (recentMatch) {
+        const page = Number(recentMatch[1])
+        const pageSize = 50
+        const response = await makeGraphQLRequest<{ chapters: { nodes: any[], pageInfo: { hasNextPage: boolean } } }>(
+            stateManager,
+            requestManager,
+            RECENTLY_UPDATED_QUERY,
+            {
+                first: pageSize,
+                offset: page * pageSize
+            },
+            headers
+        )
+
+        if (response instanceof Error) {
+            return response
+        }
+
+        return {
+            page: response.chapters.nodes.map((chapter) => ({
+                chapter: mapChapter(chapter),
+                manga: mapManga(chapter.manga)
+            })),
+            hasNextPage: response.chapters.pageInfo.hasNextPage
+        }
+    }
+
+    const categoryMatch = path.match(/^category\/(\d+)$/)
+    if (categoryMatch) {
+        const response = await makeGraphQLRequest<{ category: { mangas: { nodes: any[] } } }>(
+            stateManager,
+            requestManager,
+            CATEGORY_MANGAS_QUERY,
+            { id: Number(categoryMatch[1]) },
+            headers
+        )
+
+        if (response instanceof Error) {
+            return response
+        }
+
+        return response.category?.mangas.nodes.map(mapManga) ?? []
+    }
+
+    const sourceMatch = path.match(/^source\/([^/]+)\/(popular|latest)\/(\d+)$/)
+    if (sourceMatch) {
+        const sourceId = sourceMatch[1] ?? ""
+        const type = sourceMatch[2] ?? "popular"
+        const page = sourceMatch[3] ?? "1"
+        const response = await makeGraphQLRequest<{ fetchSourceManga: { hasNextPage: boolean, mangas: any[] } }>(
+            stateManager,
+            requestManager,
+            FETCH_SOURCE_MANGA_MUTATION,
+            {
+                input: {
+                    type: type.toUpperCase(),
+                    source: sourceId,
+                    page: Number(page)
+                }
+            },
+            headers
+        )
+
+        if (response instanceof Error) {
+            return response
+        }
+
+        if (!response.fetchSourceManga) {
+            return Error(`No source results returned for ${sourceId}`)
+        }
+
+        return {
+            mangaList: response.fetchSourceManga.mangas.map(mapManga),
+            hasNextPage: response.fetchSourceManga.hasNextPage
+        }
+    }
+
+    const sourceSearchMatch = path.match(/^source\/([^/]+)\/search$/)
+    if (sourceSearchMatch) {
+        const params = new URLSearchParams(queryString)
+        const response = await makeGraphQLRequest<{ fetchSourceManga: { hasNextPage: boolean, mangas: any[] } }>(
+            stateManager,
+            requestManager,
+            FETCH_SOURCE_MANGA_MUTATION,
+            {
+                input: {
+                    type: "SEARCH",
+                    source: sourceSearchMatch[1],
+                    page: Number(params.get("pageNum") ?? "1"),
+                    query: params.get("searchTerm") ?? undefined
+                }
+            },
+            headers
+        )
+
+        if (response instanceof Error) {
+            return response
+        }
+
+        if (!response.fetchSourceManga) {
+            return Error(`No search results returned for ${sourceSearchMatch[1]}`)
+        }
+
+        return {
+            mangaList: response.fetchSourceManga.mangas.map(mapManga),
+            hasNextPage: response.fetchSourceManga.hasNextPage
+        }
+    }
+
+    return Error(`Unsupported endpoint: ${apiEndpoint}`)
 }
 
 // Requests used for the test server button. Could be useful to test connection at other points
