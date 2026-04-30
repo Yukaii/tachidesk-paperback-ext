@@ -2478,12 +2478,198 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
 }
 
 },{}],65:[function(require,module,exports){
-(function (Buffer){(function (){
+// shim for using process in browser
+var process = module.exports = {};
+
+// cached from whatever global is present so that test runners that stub it
+// don't break things.  But we need to wrap it in a try catch in case it is
+// wrapped in strict mode code which doesn't define any globals.  It's inside a
+// function because try/catches deoptimize in certain engines.
+
+var cachedSetTimeout;
+var cachedClearTimeout;
+
+function defaultSetTimout() {
+    throw new Error('setTimeout has not been defined');
+}
+function defaultClearTimeout () {
+    throw new Error('clearTimeout has not been defined');
+}
+(function () {
+    try {
+        if (typeof setTimeout === 'function') {
+            cachedSetTimeout = setTimeout;
+        } else {
+            cachedSetTimeout = defaultSetTimout;
+        }
+    } catch (e) {
+        cachedSetTimeout = defaultSetTimout;
+    }
+    try {
+        if (typeof clearTimeout === 'function') {
+            cachedClearTimeout = clearTimeout;
+        } else {
+            cachedClearTimeout = defaultClearTimeout;
+        }
+    } catch (e) {
+        cachedClearTimeout = defaultClearTimeout;
+    }
+} ())
+function runTimeout(fun) {
+    if (cachedSetTimeout === setTimeout) {
+        //normal enviroments in sane situations
+        return setTimeout(fun, 0);
+    }
+    // if setTimeout wasn't available but was latter defined
+    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
+        cachedSetTimeout = setTimeout;
+        return setTimeout(fun, 0);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedSetTimeout(fun, 0);
+    } catch(e){
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
+            return cachedSetTimeout.call(null, fun, 0);
+        } catch(e){
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
+            return cachedSetTimeout.call(this, fun, 0);
+        }
+    }
+
+
+}
+function runClearTimeout(marker) {
+    if (cachedClearTimeout === clearTimeout) {
+        //normal enviroments in sane situations
+        return clearTimeout(marker);
+    }
+    // if clearTimeout wasn't available but was latter defined
+    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
+        cachedClearTimeout = clearTimeout;
+        return clearTimeout(marker);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedClearTimeout(marker);
+    } catch (e){
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
+            return cachedClearTimeout.call(null, marker);
+        } catch (e){
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
+            // Some versions of I.E. have different rules for clearTimeout vs setTimeout
+            return cachedClearTimeout.call(this, marker);
+        }
+    }
+
+
+
+}
+var queue = [];
+var draining = false;
+var currentQueue;
+var queueIndex = -1;
+
+function cleanUpNextTick() {
+    if (!draining || !currentQueue) {
+        return;
+    }
+    draining = false;
+    if (currentQueue.length) {
+        queue = currentQueue.concat(queue);
+    } else {
+        queueIndex = -1;
+    }
+    if (queue.length) {
+        drainQueue();
+    }
+}
+
+function drainQueue() {
+    if (draining) {
+        return;
+    }
+    var timeout = runTimeout(cleanUpNextTick);
+    draining = true;
+
+    var len = queue.length;
+    while(len) {
+        currentQueue = queue;
+        queue = [];
+        while (++queueIndex < len) {
+            if (currentQueue) {
+                currentQueue[queueIndex].run();
+            }
+        }
+        queueIndex = -1;
+        len = queue.length;
+    }
+    currentQueue = null;
+    draining = false;
+    runClearTimeout(timeout);
+}
+
+process.nextTick = function (fun) {
+    var args = new Array(arguments.length - 1);
+    if (arguments.length > 1) {
+        for (var i = 1; i < arguments.length; i++) {
+            args[i - 1] = arguments[i];
+        }
+    }
+    queue.push(new Item(fun, args));
+    if (queue.length === 1 && !draining) {
+        runTimeout(drainQueue);
+    }
+};
+
+// v8 likes predictible objects
+function Item(fun, array) {
+    this.fun = fun;
+    this.array = array;
+}
+Item.prototype.run = function () {
+    this.fun.apply(null, this.array);
+};
+process.title = 'browser';
+process.browser = true;
+process.env = {};
+process.argv = [];
+process.version = ''; // empty string to avoid regexp issues
+process.versions = {};
+
+function noop() {}
+
+process.on = noop;
+process.addListener = noop;
+process.once = noop;
+process.off = noop;
+process.removeListener = noop;
+process.removeAllListeners = noop;
+process.emit = noop;
+process.prependListener = noop;
+process.prependOnceListener = noop;
+
+process.listeners = function (name) { return [] }
+
+process.binding = function (name) {
+    throw new Error('process.binding is not supported');
+};
+
+process.cwd = function () { return '/' };
+process.chdir = function (dir) {
+    throw new Error('process.chdir is not supported');
+};
+process.umask = function() { return 0; };
+
+},{}],66:[function(require,module,exports){
+(function (process,Buffer){(function (){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.rowStyles = exports.DEFAULT_SOURCE_ROW_STYLE = exports.DEFAULT_CATEGORY_ROW_STYLE = exports.DEFAULT_UPDATED_ROW_STYLE = exports.DEFAULT_SOURCE_ROW_STATE = exports.DEFAULT_CATEGORY_ROW_STATE = exports.DEFAULT_UPDATED_ROW_STATE = exports.DEFAULT_MANGA_PER_ROW = exports.DEFAULT_SELECTED_LANGUAGES = exports.DEFAULT_SELECTED_SOURCES = exports.DEFAULT_SERVER_SOURCES = exports.DEFAULT_SERVER_SOURCE = exports.DEFAULT_SELECTED_CATEGORIES = exports.DEFAULT_SERVER_CATEGORIES = exports.DEFAULT_SERVER_CATEGORY = exports.DEFAULT_CLOUDFLARE_ACCESS_CLIENT_SECRET = exports.DEFAULT_CLOUDFLARE_ACCESS_CLIENT_ID = exports.DEFAULT_CLOUDFLARE_ACCESS_STATE = exports.DEFAULT_PASSWORD = exports.DEFAULT_USERNAME = exports.DEFAULT_AUTH_STRING = exports.DEFAULT_AUTH_STATE = exports.DEFAULT_SERVER_API = exports.DEFAULT_API_ENDPOINT = exports.DEFAULT_SERVER_URL = exports.SOURCE_ROW_STYLE_KEY = exports.CATEGORY_ROW_STYLE_KEY = exports.UPDATED_ROW_STYLE_KEY = exports.SOURCE_ROW_STATE_KEY = exports.CATEGORY_ROW_STATE_KEY = exports.UPDATED_ROW_STATE_KEY = exports.MANGA_PER_ROW_KEY = exports.SELECTED_LANGUAGES_KEY = exports.SELECTED_SOURCES_KEY = exports.SERVER_SOURCES_KEY = exports.SELECTED_CATEGORIES_KEY = exports.SERVER_CATEGORIES_KEY = exports.CLOUDFLARE_ACCESS_CLIENT_SECRET_KEY = exports.CLOUDFLARE_ACCESS_CLIENT_ID_KEY = exports.CLOUDFLARE_ACCESS_STATE_KEY = exports.PASSWORD_KEY = exports.USERNAME_KEY = exports.AUTH_STRING_KEY = exports.AUTH_STATE_KEY = exports.SERVER_API_KEY = exports.SERVER_URL_KEY = exports.SERVER_UNAVAILABLE_PAGE = exports.SERVER_UNAVAILABLE_CHAPTER_ID = exports.SERVER_UNAVAILABLE_MANGA_ID = exports.serverUnavailableMangaTiles = void 0;
-exports.setUpdatedRowStyle = exports.getSourceRowState = exports.setSourceRowState = exports.getCategoryRowState = exports.setCategoryRowState = exports.getUpdatedRowState = exports.setUpdatedRowState = exports.getMangaPerRow = exports.setMangaPerRow = exports.styleResolver = exports.getSourceNameFromId = exports.getSourceFromId = exports.getSourcesIds = exports.getSelectedSources = exports.setSelectedSources = exports.getServerSources = exports.setServerSources = exports.fetchServerSources = exports.getCategoryNameFromId = exports.getCategoryFromId = exports.getCategoriesIds = exports.getSelectedCategories = exports.setSelectedCategories = exports.getServerCategories = exports.setServerCategories = exports.fetchServerCategories = exports.testRequest = exports.makeRequest = exports.fetchChapterPages = exports.buildThumbnailURL = exports.getCloudflareAccessHeaders = exports.getCloudflareAccessClientSecret = exports.setCloudflareAccessClientSecret = exports.getCloudflareAccessClientId = exports.setCloudflareAccessClientId = exports.getCloudflareAccessState = exports.setCloudflareAccessState = exports.getPassword = exports.setPassword = exports.getUsername = exports.setUsername = exports.getAuthString = exports.setAuthString = exports.getAuthState = exports.setAuthState = exports.getServerAPI = exports.getServerURL = exports.setServerURL = exports.resetSettings = exports.languages = void 0;
-exports.v1Migration = exports.getSelectedLanguages = exports.setSelectedLanguages = exports.getLanguageName = exports.getLanguageCodes = exports.getServerLanguages = exports.getSourceRowStyle = exports.setSourceRowStyle = exports.getCategoryRowStyle = exports.setCategoryRowStyle = exports.getUpdatedRowStyle = void 0;
+exports.getSourceRowState = exports.setSourceRowState = exports.getCategoryRowState = exports.setCategoryRowState = exports.getUpdatedRowState = exports.setUpdatedRowState = exports.getMangaPerRow = exports.setMangaPerRow = exports.styleResolver = exports.getSourceNameFromId = exports.getSourceFromId = exports.getSourcesIds = exports.getSelectedSources = exports.setSelectedSources = exports.getServerSources = exports.setServerSources = exports.fetchServerSources = exports.getCategoryNameFromId = exports.getCategoryFromId = exports.getCategoriesIds = exports.getSelectedCategories = exports.setSelectedCategories = exports.getServerCategories = exports.setServerCategories = exports.fetchServerCategories = exports.testRequest = exports.makeRequest = exports.fetchChapterPages = exports.buildThumbnailURL = exports.buildAbsoluteURL = exports.getCloudflareAccessHeaders = exports.getCloudflareAccessClientSecret = exports.setCloudflareAccessClientSecret = exports.getCloudflareAccessClientId = exports.setCloudflareAccessClientId = exports.getCloudflareAccessState = exports.setCloudflareAccessState = exports.getPassword = exports.setPassword = exports.getUsername = exports.setUsername = exports.getAuthString = exports.setAuthString = exports.getAuthState = exports.setAuthState = exports.getServerAPI = exports.getServerURL = exports.setServerURL = exports.resetSettings = exports.languages = void 0;
+exports.v1Migration = exports.getSelectedLanguages = exports.setSelectedLanguages = exports.getLanguageName = exports.getLanguageCodes = exports.getServerLanguages = exports.getSourceRowStyle = exports.setSourceRowStyle = exports.getCategoryRowStyle = exports.setCategoryRowStyle = exports.getUpdatedRowStyle = exports.setUpdatedRowStyle = void 0;
 function serverUnavailableMangaTiles() {
     return [
         App.createPartialSourceManga({
@@ -2568,6 +2754,10 @@ exports.DEFAULT_SOURCE_ROW_STATE = true;
 exports.DEFAULT_UPDATED_ROW_STYLE = ["singleRowNormal"];
 exports.DEFAULT_CATEGORY_ROW_STYLE = ["singleRowNormal"];
 exports.DEFAULT_SOURCE_ROW_STYLE = ["singleRowNormal"];
+const ENV_SERVER_URL_KEY = "TACHIDESK_SERVER_URL";
+const ENV_CLOUDFLARE_ACCESS_ENABLED_KEY = "TACHIDESK_CLOUDFLARE_ACCESS_ENABLED";
+const ENV_CLOUDFLARE_ACCESS_CLIENT_ID_KEY = "TACHIDESK_CLOUDFLARE_ACCESS_CLIENT_ID";
+const ENV_CLOUDFLARE_ACCESS_CLIENT_SECRET_KEY = "TACHIDESK_CLOUDFLARE_ACCESS_CLIENT_SECRET";
 exports.rowStyles = ["singleRowNormal", "singleRowLarge", "featured", "doubleRow"];
 exports.languages = {
     'ar': 'اَلْعَرَبِيَّةُ',
@@ -2612,6 +2802,34 @@ exports.languages = {
     'zh-Hant': '中文 (繁體字)', // Chinese (Traditional)
 };
 // ! Query Interfaces End
+function getEnvironmentValue(name) {
+    const env = typeof process !== "undefined" ? process.env : undefined;
+    const value = env?.[name]?.trim();
+    return value && value.length > 0 ? value : undefined;
+}
+function normalizeServerURL(url) {
+    return url.endsWith("/") ? url : url + "/";
+}
+function getDefaultServerURLValue() {
+    const envServerURL = getEnvironmentValue(ENV_SERVER_URL_KEY);
+    return envServerURL ? normalizeServerURL(envServerURL) : exports.DEFAULT_SERVER_URL;
+}
+function getDefaultServerAPIValue() {
+    return getDefaultServerURLValue() + exports.DEFAULT_API_ENDPOINT;
+}
+function getDefaultCloudflareAccessClientIdValue() {
+    return getEnvironmentValue(ENV_CLOUDFLARE_ACCESS_CLIENT_ID_KEY) ?? exports.DEFAULT_CLOUDFLARE_ACCESS_CLIENT_ID;
+}
+function getDefaultCloudflareAccessClientSecretValue() {
+    return getEnvironmentValue(ENV_CLOUDFLARE_ACCESS_CLIENT_SECRET_KEY) ?? exports.DEFAULT_CLOUDFLARE_ACCESS_CLIENT_SECRET;
+}
+function getDefaultCloudflareAccessStateValue() {
+    const explicit = getEnvironmentValue(ENV_CLOUDFLARE_ACCESS_ENABLED_KEY);
+    if (explicit) {
+        return explicit.toLowerCase() === "true";
+    }
+    return getDefaultCloudflareAccessClientIdValue() !== "" && getDefaultCloudflareAccessClientSecretValue() !== "";
+}
 const ABOUT_SERVER_QUERY = `
     query PAPERBACK_ABOUT_SERVER {
         aboutServer {
@@ -2863,15 +3081,20 @@ const UPDATE_CHAPTER_READ_MUTATION = `
 `;
 // ! Reset Settings Begin
 async function resetSettings(stateManager) {
-    await stateManager.store(exports.SERVER_URL_KEY, exports.DEFAULT_SERVER_URL);
-    await stateManager.store(exports.SERVER_API_KEY, exports.DEFAULT_SERVER_API);
+    const defaultServerURL = getDefaultServerURLValue();
+    const defaultServerAPI = getDefaultServerAPIValue();
+    const defaultCloudflareAccessState = getDefaultCloudflareAccessStateValue();
+    const defaultCloudflareAccessClientId = getDefaultCloudflareAccessClientIdValue();
+    const defaultCloudflareAccessClientSecret = getDefaultCloudflareAccessClientSecretValue();
+    await stateManager.store(exports.SERVER_URL_KEY, defaultServerURL);
+    await stateManager.store(exports.SERVER_API_KEY, defaultServerAPI);
     await stateManager.store(exports.AUTH_STATE_KEY, exports.DEFAULT_AUTH_STATE);
     await stateManager.keychain.store(exports.AUTH_STRING_KEY, exports.DEFAULT_AUTH_STRING);
     await stateManager.store(exports.USERNAME_KEY, exports.DEFAULT_USERNAME);
     await stateManager.keychain.store(exports.PASSWORD_KEY, exports.DEFAULT_PASSWORD);
-    await stateManager.store(exports.CLOUDFLARE_ACCESS_STATE_KEY, exports.DEFAULT_CLOUDFLARE_ACCESS_STATE);
-    await stateManager.store(exports.CLOUDFLARE_ACCESS_CLIENT_ID_KEY, exports.DEFAULT_CLOUDFLARE_ACCESS_CLIENT_ID);
-    await stateManager.keychain.store(exports.CLOUDFLARE_ACCESS_CLIENT_SECRET_KEY, exports.DEFAULT_CLOUDFLARE_ACCESS_CLIENT_SECRET);
+    await stateManager.store(exports.CLOUDFLARE_ACCESS_STATE_KEY, defaultCloudflareAccessState);
+    await stateManager.store(exports.CLOUDFLARE_ACCESS_CLIENT_ID_KEY, defaultCloudflareAccessClientId);
+    await stateManager.keychain.store(exports.CLOUDFLARE_ACCESS_CLIENT_SECRET_KEY, defaultCloudflareAccessClientSecret);
     await stateManager.store(exports.SERVER_CATEGORIES_KEY, exports.DEFAULT_SERVER_CATEGORIES);
     await stateManager.store(exports.SELECTED_CATEGORIES_KEY, exports.DEFAULT_SELECTED_CATEGORIES);
     await stateManager.store(exports.SERVER_SOURCES_KEY, exports.DEFAULT_SERVER_SOURCES);
@@ -2893,20 +3116,20 @@ async function setServerURL(stateManager, url, typed = false) {
     // ! typed is a boolean that we set to true only when being entered by the DUIInputField, skipping the override when typing the url
     // ! atleast until user hits submit.
     if (!typed) {
-        url = url == "" ? exports.DEFAULT_SERVER_URL : url;
-        url = url.slice(-1) === '/' ? url : url + "/"; // Verified / at the end of URL
+        url = url == "" ? getDefaultServerURLValue() : url;
+        url = normalizeServerURL(url);
     }
     await stateManager.store(exports.SERVER_URL_KEY, url);
     await stateManager.store(exports.SERVER_API_KEY, url + exports.DEFAULT_API_ENDPOINT);
 }
 exports.setServerURL = setServerURL;
 async function getServerURL(stateManager) {
-    return await stateManager.retrieve(exports.SERVER_URL_KEY) ?? exports.DEFAULT_SERVER_URL;
+    return await stateManager.retrieve(exports.SERVER_URL_KEY) ?? getDefaultServerURLValue();
 }
 exports.getServerURL = getServerURL;
 // Get Server API url (i.e. http://127.0.0.1/api/graphql)
 async function getServerAPI(stateManager) {
-    return await stateManager.retrieve(exports.SERVER_API_KEY) ?? exports.DEFAULT_SERVER_API;
+    return await stateManager.retrieve(exports.SERVER_API_KEY) ?? getDefaultServerAPIValue();
 }
 exports.getServerAPI = getServerAPI;
 // !Server URL End
@@ -2955,7 +3178,7 @@ async function setCloudflareAccessState(stateManager, state) {
 }
 exports.setCloudflareAccessState = setCloudflareAccessState;
 async function getCloudflareAccessState(stateManager) {
-    return await stateManager.retrieve(exports.CLOUDFLARE_ACCESS_STATE_KEY) ?? exports.DEFAULT_CLOUDFLARE_ACCESS_STATE;
+    return await stateManager.retrieve(exports.CLOUDFLARE_ACCESS_STATE_KEY) ?? getDefaultCloudflareAccessStateValue();
 }
 exports.getCloudflareAccessState = getCloudflareAccessState;
 async function setCloudflareAccessClientId(stateManager, clientId) {
@@ -2963,7 +3186,7 @@ async function setCloudflareAccessClientId(stateManager, clientId) {
 }
 exports.setCloudflareAccessClientId = setCloudflareAccessClientId;
 async function getCloudflareAccessClientId(stateManager) {
-    return await stateManager.retrieve(exports.CLOUDFLARE_ACCESS_CLIENT_ID_KEY) ?? exports.DEFAULT_CLOUDFLARE_ACCESS_CLIENT_ID;
+    return await stateManager.retrieve(exports.CLOUDFLARE_ACCESS_CLIENT_ID_KEY) ?? getDefaultCloudflareAccessClientIdValue();
 }
 exports.getCloudflareAccessClientId = getCloudflareAccessClientId;
 async function setCloudflareAccessClientSecret(stateManager, clientSecret) {
@@ -2971,7 +3194,7 @@ async function setCloudflareAccessClientSecret(stateManager, clientSecret) {
 }
 exports.setCloudflareAccessClientSecret = setCloudflareAccessClientSecret;
 async function getCloudflareAccessClientSecret(stateManager) {
-    return await stateManager.keychain.retrieve(exports.CLOUDFLARE_ACCESS_CLIENT_SECRET_KEY) ?? exports.DEFAULT_CLOUDFLARE_ACCESS_CLIENT_SECRET;
+    return await stateManager.keychain.retrieve(exports.CLOUDFLARE_ACCESS_CLIENT_SECRET_KEY) ?? getDefaultCloudflareAccessClientSecretValue();
 }
 exports.getCloudflareAccessClientSecret = getCloudflareAccessClientSecret;
 async function getCloudflareAccessHeaders(stateManager) {
@@ -2991,17 +3214,21 @@ async function getCloudflareAccessHeaders(stateManager) {
 exports.getCloudflareAccessHeaders = getCloudflareAccessHeaders;
 // ! Cloudflare Access End
 // ! Requests
-function buildThumbnailURL(serverURL, thumbnailUrl) {
-    if (!thumbnailUrl) {
+function buildAbsoluteURL(serverURL, assetURL) {
+    if (!assetURL) {
         return "";
     }
-    if (thumbnailUrl.startsWith("http://") || thumbnailUrl.startsWith("https://")) {
-        return thumbnailUrl;
+    if (assetURL.startsWith("http://") || assetURL.startsWith("https://")) {
+        return assetURL;
     }
-    if (thumbnailUrl.startsWith("/")) {
-        return serverURL + thumbnailUrl.slice(1);
+    if (assetURL.startsWith("/")) {
+        return serverURL + assetURL.slice(1);
     }
-    return serverURL + thumbnailUrl;
+    return serverURL + assetURL;
+}
+exports.buildAbsoluteURL = buildAbsoluteURL;
+function buildThumbnailURL(serverURL, thumbnailUrl) {
+    return buildAbsoluteURL(serverURL, thumbnailUrl);
 }
 exports.buildThumbnailURL = buildThumbnailURL;
 function numberOrZero(value) {
@@ -3157,7 +3384,8 @@ async function fetchChapterPages(stateManager, requestManager, mangaId, chapterI
     if (response instanceof Error) {
         return response;
     }
-    return response.fetchChapterPages.pages;
+    const serverURL = await getServerURL(stateManager);
+    return response.fetchChapterPages.pages.map((page) => buildAbsoluteURL(serverURL, page));
 }
 exports.fetchChapterPages = fetchChapterPages;
 async function makeRequest(stateManager, requestManager, apiEndpoint, method = "GET", data, headers = {}) {
@@ -3538,8 +3766,8 @@ async function v1Migration(stateManager) {
 }
 exports.v1Migration = v1Migration;
 
-}).call(this)}).call(this,require("buffer").Buffer)
-},{"buffer":63}],66:[function(require,module,exports){
+}).call(this)}).call(this,require('_process'),require("buffer").Buffer)
+},{"_process":65,"buffer":63}],67:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.resetSettingsButton = exports.languageSettings = exports.sourceSettings = exports.categoriesSettings = exports.HomepageSettings = exports.serverAddressSettings = void 0;
@@ -3940,7 +4168,7 @@ const resetSettingsButton = async (stateManager) => {
 };
 exports.resetSettingsButton = resetSettingsButton;
 
-},{"./Common":65}],67:[function(require,module,exports){
+},{"./Common":66}],68:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TachiDesk = exports.TachiDeskInfo = void 0;
@@ -3952,7 +4180,7 @@ exports.TachiDeskInfo = {
     description: 'Paperback extension which aims to bridge all of Tachidesks features and the Paperback App.',
     icon: 'icon.png',
     name: 'Tachidesk',
-    version: '2.1.0',
+    version: '2.1.1',
     websiteBaseURL: "https://github.com/Suwayomi/Tachidesk-Server",
     contentRating: types_1.ContentRating.EVERYONE,
     sourceTags: [
@@ -4463,5 +4691,5 @@ class TachiDesk {
 }
 exports.TachiDesk = TachiDesk;
 
-},{"./Common":65,"./Settings":66,"@paperback/types":61}]},{},[67])(67)
+},{"./Common":66,"./Settings":67,"@paperback/types":61}]},{},[68])(68)
 });
