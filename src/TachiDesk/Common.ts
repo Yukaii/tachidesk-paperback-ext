@@ -100,6 +100,11 @@ export const DEFAULT_UPDATED_ROW_STYLE = ["singleRowNormal"]
 export const DEFAULT_CATEGORY_ROW_STYLE = ["singleRowNormal"]
 export const DEFAULT_SOURCE_ROW_STYLE = ["singleRowNormal"]
 
+const ENV_SERVER_URL_KEY = "TACHIDESK_SERVER_URL"
+const ENV_CLOUDFLARE_ACCESS_ENABLED_KEY = "TACHIDESK_CLOUDFLARE_ACCESS_ENABLED"
+const ENV_CLOUDFLARE_ACCESS_CLIENT_ID_KEY = "TACHIDESK_CLOUDFLARE_ACCESS_CLIENT_ID"
+const ENV_CLOUDFLARE_ACCESS_CLIENT_SECRET_KEY = "TACHIDESK_CLOUDFLARE_ACCESS_CLIENT_SECRET"
+
 export const rowStyles = ["singleRowNormal", "singleRowLarge", "featured", "doubleRow"]
 export const languages: Record<string, string> = {
     'ar': 'اَلْعَرَبِيَّةُ', // Arabic
@@ -220,6 +225,43 @@ export interface tachiChapter {
 }
 
 // ! Query Interfaces End
+
+function getEnvironmentValue(name: string): string | undefined {
+    const env = typeof process !== "undefined" ? process.env : undefined
+    const value = env?.[name]?.trim()
+
+    return value && value.length > 0 ? value : undefined
+}
+
+function normalizeServerURL(url: string): string {
+    return url.endsWith("/") ? url : url + "/"
+}
+
+function getDefaultServerURLValue(): string {
+    const envServerURL = getEnvironmentValue(ENV_SERVER_URL_KEY)
+    return envServerURL ? normalizeServerURL(envServerURL) : DEFAULT_SERVER_URL
+}
+
+function getDefaultServerAPIValue(): string {
+    return getDefaultServerURLValue() + DEFAULT_API_ENDPOINT
+}
+
+function getDefaultCloudflareAccessClientIdValue(): string {
+    return getEnvironmentValue(ENV_CLOUDFLARE_ACCESS_CLIENT_ID_KEY) ?? DEFAULT_CLOUDFLARE_ACCESS_CLIENT_ID
+}
+
+function getDefaultCloudflareAccessClientSecretValue(): string {
+    return getEnvironmentValue(ENV_CLOUDFLARE_ACCESS_CLIENT_SECRET_KEY) ?? DEFAULT_CLOUDFLARE_ACCESS_CLIENT_SECRET
+}
+
+function getDefaultCloudflareAccessStateValue(): boolean {
+    const explicit = getEnvironmentValue(ENV_CLOUDFLARE_ACCESS_ENABLED_KEY)
+    if (explicit) {
+        return explicit.toLowerCase() === "true"
+    }
+
+    return getDefaultCloudflareAccessClientIdValue() !== "" && getDefaultCloudflareAccessClientSecretValue() !== ""
+}
 
 const ABOUT_SERVER_QUERY = `
     query PAPERBACK_ABOUT_SERVER {
@@ -488,15 +530,21 @@ const UPDATE_CHAPTER_READ_MUTATION = `
 
 // ! Reset Settings Begin
 export async function resetSettings(stateManager: SourceStateManager) {
-    await stateManager.store(SERVER_URL_KEY, DEFAULT_SERVER_URL)
-    await stateManager.store(SERVER_API_KEY, DEFAULT_SERVER_API)
+    const defaultServerURL = getDefaultServerURLValue()
+    const defaultServerAPI = getDefaultServerAPIValue()
+    const defaultCloudflareAccessState = getDefaultCloudflareAccessStateValue()
+    const defaultCloudflareAccessClientId = getDefaultCloudflareAccessClientIdValue()
+    const defaultCloudflareAccessClientSecret = getDefaultCloudflareAccessClientSecretValue()
+
+    await stateManager.store(SERVER_URL_KEY, defaultServerURL)
+    await stateManager.store(SERVER_API_KEY, defaultServerAPI)
     await stateManager.store(AUTH_STATE_KEY, DEFAULT_AUTH_STATE)
     await stateManager.keychain.store(AUTH_STRING_KEY, DEFAULT_AUTH_STRING)
     await stateManager.store(USERNAME_KEY, DEFAULT_USERNAME)
     await stateManager.keychain.store(PASSWORD_KEY, DEFAULT_PASSWORD)
-    await stateManager.store(CLOUDFLARE_ACCESS_STATE_KEY, DEFAULT_CLOUDFLARE_ACCESS_STATE)
-    await stateManager.store(CLOUDFLARE_ACCESS_CLIENT_ID_KEY, DEFAULT_CLOUDFLARE_ACCESS_CLIENT_ID)
-    await stateManager.keychain.store(CLOUDFLARE_ACCESS_CLIENT_SECRET_KEY, DEFAULT_CLOUDFLARE_ACCESS_CLIENT_SECRET)
+    await stateManager.store(CLOUDFLARE_ACCESS_STATE_KEY, defaultCloudflareAccessState)
+    await stateManager.store(CLOUDFLARE_ACCESS_CLIENT_ID_KEY, defaultCloudflareAccessClientId)
+    await stateManager.keychain.store(CLOUDFLARE_ACCESS_CLIENT_SECRET_KEY, defaultCloudflareAccessClientSecret)
     await stateManager.store(SERVER_CATEGORIES_KEY, DEFAULT_SERVER_CATEGORIES)
     await stateManager.store(SELECTED_CATEGORIES_KEY, DEFAULT_SELECTED_CATEGORIES)
     await stateManager.store(SERVER_SOURCES_KEY, DEFAULT_SERVER_SOURCES)
@@ -519,8 +567,8 @@ export async function setServerURL(stateManager: SourceStateManager, url: string
     // ! typed is a boolean that we set to true only when being entered by the DUIInputField, skipping the override when typing the url
     // ! atleast until user hits submit.
     if (!typed) {
-        url = url == "" ? DEFAULT_SERVER_URL : url
-        url = url.slice(-1) === '/' ? url : url + "/" // Verified / at the end of URL
+        url = url == "" ? getDefaultServerURLValue() : url
+        url = normalizeServerURL(url)
     }
 
     await stateManager.store(SERVER_URL_KEY, url)
@@ -528,12 +576,12 @@ export async function setServerURL(stateManager: SourceStateManager, url: string
 }
 
 export async function getServerURL(stateManager: SourceStateManager) {
-    return (await stateManager.retrieve(SERVER_URL_KEY) as string | undefined) ?? DEFAULT_SERVER_URL
+    return (await stateManager.retrieve(SERVER_URL_KEY) as string | undefined) ?? getDefaultServerURLValue()
 }
 
 // Get Server API url (i.e. http://127.0.0.1/api/graphql)
 export async function getServerAPI(stateManager: SourceStateManager) {
-    return (await stateManager.retrieve(SERVER_API_KEY) as string | undefined) ?? DEFAULT_SERVER_API
+    return (await stateManager.retrieve(SERVER_API_KEY) as string | undefined) ?? getDefaultServerAPIValue()
 }
 // !Server URL End
 
@@ -583,7 +631,7 @@ export async function setCloudflareAccessState(stateManager: SourceStateManager,
 }
 
 export async function getCloudflareAccessState(stateManager: SourceStateManager) {
-    return (await stateManager.retrieve(CLOUDFLARE_ACCESS_STATE_KEY) as boolean | undefined) ?? DEFAULT_CLOUDFLARE_ACCESS_STATE
+    return (await stateManager.retrieve(CLOUDFLARE_ACCESS_STATE_KEY) as boolean | undefined) ?? getDefaultCloudflareAccessStateValue()
 }
 
 export async function setCloudflareAccessClientId(stateManager: SourceStateManager, clientId: string) {
@@ -591,7 +639,7 @@ export async function setCloudflareAccessClientId(stateManager: SourceStateManag
 }
 
 export async function getCloudflareAccessClientId(stateManager: SourceStateManager) {
-    return (await stateManager.retrieve(CLOUDFLARE_ACCESS_CLIENT_ID_KEY) as string | undefined) ?? DEFAULT_CLOUDFLARE_ACCESS_CLIENT_ID
+    return (await stateManager.retrieve(CLOUDFLARE_ACCESS_CLIENT_ID_KEY) as string | undefined) ?? getDefaultCloudflareAccessClientIdValue()
 }
 
 export async function setCloudflareAccessClientSecret(stateManager: SourceStateManager, clientSecret: string) {
@@ -599,7 +647,7 @@ export async function setCloudflareAccessClientSecret(stateManager: SourceStateM
 }
 
 export async function getCloudflareAccessClientSecret(stateManager: SourceStateManager) {
-    return (await stateManager.keychain.retrieve(CLOUDFLARE_ACCESS_CLIENT_SECRET_KEY) as string | undefined) ?? DEFAULT_CLOUDFLARE_ACCESS_CLIENT_SECRET
+    return (await stateManager.keychain.retrieve(CLOUDFLARE_ACCESS_CLIENT_SECRET_KEY) as string | undefined) ?? getDefaultCloudflareAccessClientSecretValue()
 }
 
 export async function getCloudflareAccessHeaders(stateManager: SourceStateManager): Promise<Record<string, string>> {

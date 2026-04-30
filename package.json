@@ -5,9 +5,9 @@
   "description": "Community maintained Paperback extension repository",
   "main": "index.js",
   "scripts": {
-    "bundle": "npx paperback bundle",
-    "serve": "npx paperback serve",
-    "test": "npx paperback test",
+    "bundle": "node ./scripts/paperback-with-dotenv.js bundle",
+    "serve": "node ./scripts/paperback-with-dotenv.js serve",
+    "test": "node ./scripts/paperback-with-dotenv.js test",
     "nodemon": "nodemon"
   },
   "author": "Netsky",
