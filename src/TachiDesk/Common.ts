@@ -8,11 +8,15 @@ export function serverUnavailableMangaTiles() {
         App.createPartialSourceManga({
             title: "Server",
             image: "",
-            mangaId: "placeholder-id",
+            mangaId: SERVER_UNAVAILABLE_MANGA_ID,
             subtitle: "Unavailable"
         })
     ]
 }
+
+export const SERVER_UNAVAILABLE_MANGA_ID = "placeholder-id"
+export const SERVER_UNAVAILABLE_CHAPTER_ID = "0"
+export const SERVER_UNAVAILABLE_PAGE = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=="
 
 // StateManager Keys
 export const SERVER_URL_KEY = "serverURL";
@@ -527,7 +531,7 @@ export async function getServerURL(stateManager: SourceStateManager) {
     return (await stateManager.retrieve(SERVER_URL_KEY) as string | undefined) ?? DEFAULT_SERVER_URL
 }
 
-// Get Server API url (i.e. http://127.0.0.1/api/v1/)
+// Get Server API url (i.e. http://127.0.0.1/api/graphql)
 export async function getServerAPI(stateManager: SourceStateManager) {
     return (await stateManager.retrieve(SERVER_API_KEY) as string | undefined) ?? DEFAULT_SERVER_API
 }
@@ -618,6 +622,22 @@ export async function getCloudflareAccessHeaders(stateManager: SourceStateManage
 // ! Cloudflare Access End
 
 // ! Requests
+export function buildThumbnailURL(serverURL: string, thumbnailUrl?: string): string {
+    if (!thumbnailUrl) {
+        return ""
+    }
+
+    if (thumbnailUrl.startsWith("http://") || thumbnailUrl.startsWith("https://")) {
+        return thumbnailUrl
+    }
+
+    if (thumbnailUrl.startsWith("/")) {
+        return serverURL + thumbnailUrl.slice(1)
+    }
+
+    return serverURL + thumbnailUrl
+}
+
 function numberOrZero(value: any): number {
     if (value === null || value === undefined || value === "") {
         return 0

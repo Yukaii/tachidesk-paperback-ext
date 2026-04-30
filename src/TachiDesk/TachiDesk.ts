@@ -31,6 +31,7 @@ import {
 } from "./Settings";
 
 import {
+    buildThumbnailURL,
     DEFAULT_SERVER_URL,
     fetchServerCategories,
     fetchServerSources,
@@ -55,6 +56,9 @@ import {
     getUpdatedRowStyle,
     makeRequest,
     fetchChapterPages,
+    SERVER_UNAVAILABLE_CHAPTER_ID,
+    SERVER_UNAVAILABLE_MANGA_ID,
+    SERVER_UNAVAILABLE_PAGE,
     serverUnavailableMangaTiles,
     setServerCategories,
     setServerSources,
@@ -134,7 +138,7 @@ export class TachiDesk implements PaperbackExtensionBase, MangaProgressProviding
 
     // share URL
     getMangaShareUrl(mangaId: string): string {
-        if (this.serverAddress != "") {
+        if (this.serverAddress != "" && mangaId !== SERVER_UNAVAILABLE_MANGA_ID) {
             return this.serverAddress + "manga/" + mangaId
         }
         return ""
@@ -142,8 +146,28 @@ export class TachiDesk implements PaperbackExtensionBase, MangaProgressProviding
 
     // Manga info -> uses TachiManga interface
     async getMangaDetails(mangaId: string): Promise<SourceManga> {
-        const manga: tachiManga = await makeRequest(this.stateManager, this.requestManager, "manga/" + mangaId)
-        const tags: [TagSection] = [
+        if (mangaId === SERVER_UNAVAILABLE_MANGA_ID) {
+            return App.createSourceManga({
+                id: mangaId,
+                mangaInfo: App.createMangaInfo({
+                    titles: ["Server Unavailable"],
+                    image: "",
+                    author: "",
+                    artist: "",
+                    desc: "Configure a reachable Suwayomi server in Source Settings.",
+                    status: "UNKNOWN",
+                    tags: []
+                })
+            })
+        }
+
+        const mangaResponse = await makeRequest(this.stateManager, this.requestManager, "manga/" + mangaId)
+        if (mangaResponse instanceof Error) {
+            throw mangaResponse
+        }
+
+        const manga: tachiManga = mangaResponse
+        const tags: TagSection[] = manga.genre.length > 0 ? [
             App.createTagSection({
                 id: "0",
                 label: "genres",
@@ -152,13 +176,13 @@ export class TachiDesk implements PaperbackExtensionBase, MangaProgressProviding
                     label: tag
                 }))
             })
-        ]
+        ] : []
 
         return App.createSourceManga({
             id: mangaId,
             mangaInfo: App.createMangaInfo({
                 titles: [manga.title],
-                image: (await getServerURL(this.stateManager)) + manga.thumbnailUrl.slice(1),
+                image: buildThumbnailURL(await getServerURL(this.stateManager), manga.thumbnailUrl),
                 author: manga.author,
                 artist: manga.artist,
                 desc: manga.description,
@@ -170,8 +194,24 @@ export class TachiDesk implements PaperbackExtensionBase, MangaProgressProviding
 
     // Chapter list, sets the share URl address
     async getChapters(mangaId: string): Promise<Chapter[]> {
+        if (mangaId === SERVER_UNAVAILABLE_MANGA_ID) {
+            return [
+                App.createChapter({
+                    id: SERVER_UNAVAILABLE_CHAPTER_ID,
+                    name: "Configure Server",
+                    chapNum: 1,
+                    time: new Date(0),
+                    sortingIndex: 0
+                })
+            ]
+        }
+
         // Fetches manga first to use to check last fetched at
-        const manga: tachiManga = await makeRequest(this.stateManager, this.requestManager, "manga/" + mangaId)
+        const mangaResponse = await makeRequest(this.stateManager, this.requestManager, "manga/" + mangaId)
+        if (mangaResponse instanceof Error) {
+            throw mangaResponse
+        }
+        const manga: tachiManga = mangaResponse
         let chaptersQueryString = "manga/" + mangaId + "/chapters"
 
         // If last fetched is older than a day ago, do an online fetch for the manga and the chapter list
@@ -181,7 +221,11 @@ export class TachiDesk implements PaperbackExtensionBase, MangaProgressProviding
             chaptersQueryString += "?onlineFetch=true"
         }
 
-        const chaptersData: tachiChapter[] = await makeRequest(this.stateManager, this.requestManager, chaptersQueryString)
+        const chaptersResponse = await makeRequest(this.stateManager, this.requestManager, chaptersQueryString)
+        if (chaptersResponse instanceof Error) {
+            throw chaptersResponse
+        }
+        const chaptersData: tachiChapter[] = chaptersResponse
         this.serverAddress = await getServerURL(this.stateManager)
 
         const chapters: Chapter[] = []
@@ -203,6 +247,14 @@ export class TachiDesk implements PaperbackExtensionBase, MangaProgressProviding
 
     // Provides pages for chapter
     async getChapterDetails(mangaId: string, chapterId: string): Promise<ChapterDetails> {
+        if (mangaId === SERVER_UNAVAILABLE_MANGA_ID || chapterId === SERVER_UNAVAILABLE_CHAPTER_ID) {
+            return App.createChapterDetails({
+                id: chapterId,
+                mangaId,
+                pages: [SERVER_UNAVAILABLE_PAGE]
+            })
+        }
+
         const pages = await fetchChapterPages(this.stateManager, this.requestManager, mangaId, chapterId)
 
         if (pages instanceof Error) {
@@ -395,7 +447,7 @@ export class TachiDesk implements PaperbackExtensionBase, MangaProgressProviding
                             App.createPartialSourceManga({
                                 title: manga.title,
                                 mangaId: manga.id.toString(),
-                                image: (await getServerURL(this.stateManager)) + manga.thumbnailUrl.slice(1)
+                                image: buildThumbnailURL(await getServerURL(this.stateManager), manga.thumbnailUrl)
                             })
                         )
                     }
@@ -426,12 +478,18 @@ export class TachiDesk implements PaperbackExtensionBase, MangaProgressProviding
                 page = metadata?.page ?? 1
                 apiEndpoint = "update/recentChapters/" + page;
                 response = (await makeRequest(this.stateManager, this.requestManager, apiEndpoint));
+                if (response instanceof Error) {
+                    response = { page: [], hasNextPage: false }
+                }
                 tileData = response.page
                 break
             case "category":
                 page = metadata?.page ?? undefined // Categories don't have pages
                 apiEndpoint = "category/" + sourceId;
                 response = (await makeRequest(this.stateManager, this.requestManager, apiEndpoint));
+                if (response instanceof Error) {
+                    response = []
+                }
                 tileData = response
                 break
             case "popular":
@@ -440,6 +498,9 @@ export class TachiDesk implements PaperbackExtensionBase, MangaProgressProviding
                 page = metadata?.page ?? 1
                 apiEndpoint = "source/" + sourceId + "/" + type + "/" + page;
                 response = (await makeRequest(this.stateManager, this.requestManager, apiEndpoint));
+                if (response instanceof Error) {
+                    response = { mangaList: [], hasNextPage: false }
+                }
                 tileData = response.mangaList
                 break;
         }
@@ -458,7 +519,7 @@ export class TachiDesk implements PaperbackExtensionBase, MangaProgressProviding
                 App.createPartialSourceManga({
                     title: manga.title,
                     mangaId: manga.id.toString(),
-                    image: (await getServerURL(this.stateManager)) + manga.thumbnailUrl.slice(1)
+                    image: buildThumbnailURL(await getServerURL(this.stateManager), manga.thumbnailUrl)
                 })
             )
         }
@@ -491,6 +552,7 @@ export class TachiDesk implements PaperbackExtensionBase, MangaProgressProviding
         }
 
         const tiles = []
+        let hadError = false
         for (const source of selectedSources) {
             if (page !== 1) {
                 if (!meta_sources[source]) continue
@@ -501,6 +563,7 @@ export class TachiDesk implements PaperbackExtensionBase, MangaProgressProviding
             // If request result is an error (evaluated by makeRequest), then skip source
             // This stops individual sources from messing up the whole search process.
             if (mangaResults instanceof Error) {
+                hadError = true
                 continue
             }
 
@@ -509,12 +572,23 @@ export class TachiDesk implements PaperbackExtensionBase, MangaProgressProviding
                     App.createPartialSourceManga({
                         title: manga.title,
                         mangaId: String(manga.id),
-                        image: (await getServerURL(this.stateManager)) + manga.thumbnailUrl.slice(1),
+                        image: buildThumbnailURL(await getServerURL(this.stateManager), manga.thumbnailUrl),
                         subtitle: getSourceNameFromId(serverSources, source)
                     })
                 )
             }
             meta_sources[source] = mangaResults.hasNextPage
+        }
+
+        if (tiles.length === 0 && hadError) {
+            tiles.push(
+                App.createPartialSourceManga({
+                    title: "Server Unavailable",
+                    mangaId: SERVER_UNAVAILABLE_MANGA_ID,
+                    image: "",
+                    subtitle: "Check Source Settings"
+                })
+            )
         }
 
         metadata = tiles.length !== 0 ? { page: page + 1, sources: meta_sources } : undefined
@@ -527,8 +601,15 @@ export class TachiDesk implements PaperbackExtensionBase, MangaProgressProviding
 
     // This method is only used in 0.9, so it may or may not be completely correct, since it's not been tested.
     async getMangaProgress(mangaId: string): Promise<MangaProgress | undefined> {
+        if (mangaId === SERVER_UNAVAILABLE_MANGA_ID) {
+            return undefined
+        }
         console.log(`getting manga progress for ${mangaId}`);
-        const manga: tachiManga = await makeRequest(this.stateManager, this.requestManager, "manga/" + mangaId + "/full")
+        const mangaResponse = await makeRequest(this.stateManager, this.requestManager, "manga/" + mangaId + "/full")
+        if (mangaResponse instanceof Error) {
+            return undefined
+        }
+        const manga: tachiManga = mangaResponse
         console.log(`manga ${mangaId} progress: ${manga}`);
         if (!manga.lastChapterRead) {
             return undefined
@@ -556,9 +637,16 @@ export class TachiDesk implements PaperbackExtensionBase, MangaProgressProviding
 
         for (const readAction of chapterReadActions) {
             try {
+                if (readAction.mangaId === SERVER_UNAVAILABLE_MANGA_ID) {
+                    await actionQueue.discardChapterReadAction(readAction)
+                    continue
+                }
                 let urlPath = "manga/" + readAction.mangaId + "/chapter/" + readAction.sourceChapterId;
                 console.log(`marking mangaId ${readAction.mangaId} with sourceChapterId ${readAction.sourceChapterId} as read`)
-                await makeRequest(this.stateManager, this.requestManager, urlPath, 'PATCH', 'read=true')
+                const response = await makeRequest(this.stateManager, this.requestManager, urlPath, 'PATCH', 'read=true')
+                if (response instanceof Error) {
+                    throw response
+                }
                 await actionQueue.discardChapterReadAction(readAction)
             } catch (error) {
                 console.log(error)
