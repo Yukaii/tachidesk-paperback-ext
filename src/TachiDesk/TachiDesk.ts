@@ -19,7 +19,7 @@ import {
     SourceManga,
     TagSection,
     TrackerActionQueue,
-} from "@paperback/types/lib/compat/0.8/index.js"
+} from "@paperback/types"
 
 import {
     HomepageSettings,

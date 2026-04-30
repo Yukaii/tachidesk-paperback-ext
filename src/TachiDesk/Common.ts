@@ -1,7 +1,7 @@
 import {
     RequestManager,
     SourceStateManager
-} from '@paperback/types/lib/compat/0.8/index.js'
+} from '@paperback/types'
 
 export function serverUnavailableMangaTiles() {
     return [

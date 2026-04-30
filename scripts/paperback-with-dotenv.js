@@ -40,29 +40,6 @@ const cliPath = fs.existsSync(path.join(cliDirectory, "run.js"))
     ? path.join(cliDirectory, "run.js")
     : path.join(cliDirectory, "run");
 
-if (process.argv[2] === "test") {
-    const child = spawn(process.execPath, [path.join(__dirname, "paperback-test.js")], {
-        stdio: "inherit",
-        env: process.env,
-    });
-
-    child.on("exit", (code, signal) => {
-        if (signal) {
-            process.kill(process.pid, signal);
-            return;
-        }
-
-        process.exit(code ?? 1);
-    });
-
-    child.on("error", (error) => {
-        console.error(error);
-        process.exit(1);
-    });
-
-    return;
-}
-
 const child = spawn(process.execPath, [cliPath, ...process.argv.slice(2)], {
     stdio: "inherit",
     env: process.env,
@@ -71,29 +48,6 @@ const child = spawn(process.execPath, [cliPath, ...process.argv.slice(2)], {
 child.on("exit", (code, signal) => {
     if (signal) {
         process.kill(process.pid, signal);
-        return;
-    }
-
-    if (code === 0 && process.argv[2] === "bundle") {
-        const postprocess = spawn(process.execPath, [path.join(__dirname, "paperback-postprocess.js")], {
-            stdio: "inherit",
-            env: process.env,
-        });
-
-        postprocess.on("exit", (postprocessCode, postprocessSignal) => {
-            if (postprocessSignal) {
-                process.kill(process.pid, postprocessSignal);
-                return;
-            }
-
-            process.exit(postprocessCode ?? 1);
-        });
-
-        postprocess.on("error", (error) => {
-            console.error(error);
-            process.exit(1);
-        });
-
         return;
     }
 
