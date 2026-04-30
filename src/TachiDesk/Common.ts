@@ -22,6 +22,10 @@ export const AUTH_STRING_KEY = "AuthString";
 export const USERNAME_KEY = "serverUsername";
 export const PASSWORD_KEY = "serverPassword";
 
+export const CLOUDFLARE_ACCESS_STATE_KEY = "cloudflareAccessState";
+export const CLOUDFLARE_ACCESS_CLIENT_ID_KEY = "cloudflareAccessClientId";
+export const CLOUDFLARE_ACCESS_CLIENT_SECRET_KEY = "cloudflareAccessClientSecret";
+
 export const SERVER_CATEGORIES_KEY = "serverCategories";
 export const SELECTED_CATEGORIES_KEY = "selectedCategories";
 
@@ -46,6 +50,10 @@ export const DEFAULT_AUTH_STATE = false;
 export const DEFAULT_AUTH_STRING = "";
 export const DEFAULT_USERNAME = "";
 export const DEFAULT_PASSWORD = "";
+
+export const DEFAULT_CLOUDFLARE_ACCESS_STATE = false;
+export const DEFAULT_CLOUDFLARE_ACCESS_CLIENT_ID = "";
+export const DEFAULT_CLOUDFLARE_ACCESS_CLIENT_SECRET = "";
 
 export const DEFAULT_SERVER_CATEGORY: tachiCategory = {
     id: 0,
@@ -217,6 +225,9 @@ export async function resetSettings(stateManager: SourceStateManager) {
     await stateManager.keychain.store(AUTH_STRING_KEY, DEFAULT_AUTH_STRING)
     await stateManager.store(USERNAME_KEY, DEFAULT_USERNAME)
     await stateManager.keychain.store(PASSWORD_KEY, DEFAULT_PASSWORD)
+    await stateManager.store(CLOUDFLARE_ACCESS_STATE_KEY, DEFAULT_CLOUDFLARE_ACCESS_STATE)
+    await stateManager.store(CLOUDFLARE_ACCESS_CLIENT_ID_KEY, DEFAULT_CLOUDFLARE_ACCESS_CLIENT_ID)
+    await stateManager.keychain.store(CLOUDFLARE_ACCESS_CLIENT_SECRET_KEY, DEFAULT_CLOUDFLARE_ACCESS_CLIENT_SECRET)
     await stateManager.store(SERVER_CATEGORIES_KEY, DEFAULT_SERVER_CATEGORIES)
     await stateManager.store(SELECTED_CATEGORIES_KEY, DEFAULT_SELECTED_CATEGORIES)
     await stateManager.store(SERVER_SOURCES_KEY, DEFAULT_SERVER_SOURCES)
@@ -296,6 +307,50 @@ export async function getPassword(stateManager: SourceStateManager) {
     return (await stateManager.keychain.retrieve(PASSWORD_KEY) as string | undefined) ?? DEFAULT_PASSWORD;
 }
 // ! Authentication End
+
+// ! Cloudflare Access Start
+export async function setCloudflareAccessState(stateManager: SourceStateManager, state: boolean) {
+    await stateManager.store(CLOUDFLARE_ACCESS_STATE_KEY, state)
+}
+
+export async function getCloudflareAccessState(stateManager: SourceStateManager) {
+    return (await stateManager.retrieve(CLOUDFLARE_ACCESS_STATE_KEY) as boolean | undefined) ?? DEFAULT_CLOUDFLARE_ACCESS_STATE
+}
+
+export async function setCloudflareAccessClientId(stateManager: SourceStateManager, clientId: string) {
+    await stateManager.store(CLOUDFLARE_ACCESS_CLIENT_ID_KEY, clientId)
+}
+
+export async function getCloudflareAccessClientId(stateManager: SourceStateManager) {
+    return (await stateManager.retrieve(CLOUDFLARE_ACCESS_CLIENT_ID_KEY) as string | undefined) ?? DEFAULT_CLOUDFLARE_ACCESS_CLIENT_ID
+}
+
+export async function setCloudflareAccessClientSecret(stateManager: SourceStateManager, clientSecret: string) {
+    await stateManager.keychain.store(CLOUDFLARE_ACCESS_CLIENT_SECRET_KEY, clientSecret)
+}
+
+export async function getCloudflareAccessClientSecret(stateManager: SourceStateManager) {
+    return (await stateManager.keychain.retrieve(CLOUDFLARE_ACCESS_CLIENT_SECRET_KEY) as string | undefined) ?? DEFAULT_CLOUDFLARE_ACCESS_CLIENT_SECRET
+}
+
+export async function getCloudflareAccessHeaders(stateManager: SourceStateManager): Promise<Record<string, string>> {
+    if (!(await getCloudflareAccessState(stateManager))) {
+        return {}
+    }
+
+    const clientId = (await getCloudflareAccessClientId(stateManager)).trim()
+    const clientSecret = (await getCloudflareAccessClientSecret(stateManager)).trim()
+
+    if (clientId === "" || clientSecret === "") {
+        return {}
+    }
+
+    return {
+        "CF-Access-Client-ID": clientId,
+        "CF-Access-Client-Secret": clientSecret
+    }
+}
+// ! Cloudflare Access End
 
 // ! Requests
 export async function makeRequest(stateManager: SourceStateManager, requestManager: RequestManager, apiEndpoint: string, method = "GET", data?: Record<string, string> | string, headers: Record<string, string> = {}) {

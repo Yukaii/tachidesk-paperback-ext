@@ -11,6 +11,9 @@ import {
     fetchServerCategories,
     fetchServerSources,
     getAuthState,
+    getCloudflareAccessClientId,
+    getCloudflareAccessClientSecret,
+    getCloudflareAccessState,
     getCategoriesIds,
     getCategoryNameFromId,
     getCategoryRowState,
@@ -35,6 +38,9 @@ import {
     getUsername,
     resetSettings,
     rowStyles,
+    setCloudflareAccessClientId,
+    setCloudflareAccessClientSecret,
+    setCloudflareAccessState,
     setAuthState,
     setCategoryRowState,
     setCategoryRowStyle,
@@ -154,6 +160,49 @@ export const serverAddressSettings = (stateManager: SourceStateManager, requestM
                                     },
                                     async set(newValue) {
                                         await setPassword(stateManager, newValue as string)
+                                    }
+                                })
+                            })
+                        ]
+                    }),
+                    App.createDUISection({
+                        id: "cloudflareAccessSettings",
+                        header: "Cloudflare Zero Trust",
+                        isHidden: false,
+                        rows: async () => [
+                            App.createDUISwitch({
+                                id: "cloudflareAccessStateSwitch",
+                                label: "Enabled",
+                                value: App.createDUIBinding({
+                                    async get() {
+                                        return await getCloudflareAccessState(stateManager)
+                                    },
+                                    async set(newValue) {
+                                        await setCloudflareAccessState(stateManager, newValue as boolean)
+                                    }
+                                })
+                            }),
+                            App.createDUIInputField({
+                                id: "cloudflareAccessClientIdField",
+                                label: "Client ID",
+                                value: App.createDUIBinding({
+                                    async get() {
+                                        return await getCloudflareAccessClientId(stateManager)
+                                    },
+                                    async set(newValue) {
+                                        await setCloudflareAccessClientId(stateManager, newValue as string)
+                                    }
+                                })
+                            }),
+                            App.createDUISecureInputField({
+                                id: "cloudflareAccessClientSecretField",
+                                label: "Client Secret",
+                                value: App.createDUIBinding({
+                                    async get() {
+                                        return await getCloudflareAccessClientSecret(stateManager)
+                                    },
+                                    async set(newValue) {
+                                        await setCloudflareAccessClientSecret(stateManager, newValue as string)
                                     }
                                 })
                             })

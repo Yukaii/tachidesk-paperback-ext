@@ -36,6 +36,7 @@ import {
     fetchServerSources,
     getAuthState,
     getAuthString,
+    getCloudflareAccessHeaders,
     getCategoryFromId,
     getCategoryNameFromId,
     getCategoryRowState,
@@ -95,6 +96,11 @@ export class TachiDesk implements PaperbackExtensionBase, MangaProgressProviding
                         ...request.headers,
                         authorization: await getAuthString(this.stateManager)
                     }
+                }
+
+                request.headers = {
+                    ...request.headers,
+                    ...await getCloudflareAccessHeaders(this.stateManager)
                 }
 
                 return request

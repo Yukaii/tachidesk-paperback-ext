@@ -9,6 +9,7 @@ This  [Paperback](https://paperback.moe/) extension lets you use Tachiyomi exten
 
 ## Notice
 <b>Since iOS 18, Suwayomi-Server MUST be served through HTTPS.</b>
+<b>If your Tachidesk server is behind Cloudflare Zero Trust, enable the Cloudflare Access settings and enter the service token client ID and client secret.</b>
 
 ## Setup
 -   Setup a Tachidesk server by following this [guide](https://github.com/Suwayomi/Tachidesk-Server#downloading-and-running-the-app).
