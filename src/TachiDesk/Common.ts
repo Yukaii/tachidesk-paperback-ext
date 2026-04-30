@@ -670,20 +670,24 @@ export async function getCloudflareAccessHeaders(stateManager: SourceStateManage
 // ! Cloudflare Access End
 
 // ! Requests
-export function buildThumbnailURL(serverURL: string, thumbnailUrl?: string): string {
-    if (!thumbnailUrl) {
+export function buildAbsoluteURL(serverURL: string, assetURL?: string): string {
+    if (!assetURL) {
         return ""
     }
 
-    if (thumbnailUrl.startsWith("http://") || thumbnailUrl.startsWith("https://")) {
-        return thumbnailUrl
+    if (assetURL.startsWith("http://") || assetURL.startsWith("https://")) {
+        return assetURL
     }
 
-    if (thumbnailUrl.startsWith("/")) {
-        return serverURL + thumbnailUrl.slice(1)
+    if (assetURL.startsWith("/")) {
+        return serverURL + assetURL.slice(1)
     }
 
-    return serverURL + thumbnailUrl
+    return serverURL + assetURL
+}
+
+export function buildThumbnailURL(serverURL: string, thumbnailUrl?: string): string {
+    return buildAbsoluteURL(serverURL, thumbnailUrl)
 }
 
 function numberOrZero(value: any): number {
@@ -896,7 +900,8 @@ export async function fetchChapterPages(
         return response
     }
 
-    return response.fetchChapterPages.pages
+    const serverURL = await getServerURL(stateManager)
+    return response.fetchChapterPages.pages.map((page) => buildAbsoluteURL(serverURL, page))
 }
 
 export async function makeRequest(stateManager: SourceStateManager, requestManager: RequestManager, apiEndpoint: string, method = "GET", data?: Record<string, string> | string, headers: Record<string, string> = {}) {
