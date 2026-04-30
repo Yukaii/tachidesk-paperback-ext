@@ -161,7 +161,7 @@ export class TachiDesk implements PaperbackExtensionBase, MangaProgressProviding
             })
         }
 
-        const mangaResponse = await makeRequest(this.stateManager, this.requestManager, "manga/" + mangaId)
+        const mangaResponse = await makeRequest(this.stateManager, this.requestManager, "manga/" + mangaId + "/full")
         if (mangaResponse instanceof Error) {
             throw mangaResponse
         }
@@ -177,6 +177,15 @@ export class TachiDesk implements PaperbackExtensionBase, MangaProgressProviding
                 }))
             })
         ] : []
+        const additionalInfo: Record<string, string> = {}
+
+        if (manga.lastChapterRead) {
+            additionalInfo["Last Read"] = manga.lastChapterRead.name || `Chapter ${manga.lastChapterRead.chapterNumber}`
+        }
+
+        if (manga.chapterCount > 0) {
+            additionalInfo["Progress"] = `${manga.chapterCount - manga.unreadCount}/${manga.chapterCount}`
+        }
 
         return App.createSourceManga({
             id: mangaId,
@@ -187,7 +196,8 @@ export class TachiDesk implements PaperbackExtensionBase, MangaProgressProviding
                 artist: manga.artist,
                 desc: manga.description,
                 status: manga.status,
-                tags
+                tags,
+                additionalInfo
             })
         })
     }
@@ -231,11 +241,20 @@ export class TachiDesk implements PaperbackExtensionBase, MangaProgressProviding
         const chapters: Chapter[] = []
 
         for (const chapter of chaptersData) {
+            let group = chapter.scanlator || undefined
+            if (chapter.read) {
+                group = group ? `${group} | Read` : "Read"
+            }
+            else if (chapter.lastPageRead > 0) {
+                group = group ? `${group} | In Progress` : "In Progress"
+            }
+
             chapters.push(
                 App.createChapter({
                     id: chapter.index.toString(),
                     name: chapter.name,
                     chapNum: chapter.chapterNumber,
+                    group,
                     time: new Date(chapter.uploadDate),
                     sortingIndex: chapter.index
                 })
@@ -619,6 +638,7 @@ export class TachiDesk implements PaperbackExtensionBase, MangaProgressProviding
             lastReadChapterNumber: manga.lastChapterRead.chapterNumber,
             lastReadVolumeNumber: undefined,
             trackedListName:  undefined,
+            lastReadTime: manga.lastReadAt > 0 ? new Date(manga.lastReadAt) : undefined,
             userRating: undefined,
         })
     }
