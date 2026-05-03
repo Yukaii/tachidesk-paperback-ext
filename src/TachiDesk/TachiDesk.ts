@@ -251,7 +251,7 @@ export class TachiDesk implements PaperbackExtensionBase, MangaProgressProviding
 
             chapters.push(
                 App.createChapter({
-                    id: chapter.index.toString(),
+                    id: chapter.id.toString(),
                     name: chapter.name,
                     chapNum: chapter.chapterNumber,
                     group,
@@ -657,12 +657,13 @@ export class TachiDesk implements PaperbackExtensionBase, MangaProgressProviding
 
         for (const readAction of chapterReadActions) {
             try {
-                if (readAction.mangaId === SERVER_UNAVAILABLE_MANGA_ID) {
+                const mangaId = readAction.sourceMangaId || readAction.mangaId
+                if (mangaId === SERVER_UNAVAILABLE_MANGA_ID) {
                     await actionQueue.discardChapterReadAction(readAction)
                     continue
                 }
-                let urlPath = "manga/" + readAction.mangaId + "/chapter/" + readAction.sourceChapterId;
-                console.log(`marking mangaId ${readAction.mangaId} with sourceChapterId ${readAction.sourceChapterId} as read`)
+                const urlPath = "manga/" + mangaId + "/chapter/" + readAction.sourceChapterId
+                console.log(`marking mangaId ${mangaId} with sourceChapterId ${readAction.sourceChapterId} as read`)
                 const response = await makeRequest(this.stateManager, this.requestManager, urlPath, 'PATCH', 'read=true')
                 if (response instanceof Error) {
                     throw response

@@ -462,6 +462,14 @@ const CHAPTER_BY_SOURCE_ORDER_QUERY = `
     }
 `
 
+const CHAPTER_BY_ID_QUERY = `
+    query PAPERBACK_CHAPTER_BY_ID($id: Int!) {
+        chapter(id: $id) {
+            ${CHAPTER_FIELDS}
+        }
+    }
+`
+
 const FETCH_CHAPTER_PAGES_MUTATION = `
     mutation PAPERBACK_FETCH_CHAPTER_PAGES($chapterId: Int!) {
         fetchChapterPages(input: { chapterId: $chapterId }) {
@@ -870,13 +878,52 @@ async function getChapterNodeFromSourceOrder(
     return chapter
 }
 
+async function getChapterNodeById(
+    stateManager: SourceStateManager,
+    requestManager: RequestManager,
+    chapterId: number
+): Promise<any | Error> {
+    const response = await makeGraphQLRequest<{ chapter?: any }>(
+        stateManager,
+        requestManager,
+        CHAPTER_BY_ID_QUERY,
+        {
+            id: chapterId
+        }
+    )
+
+    if (response instanceof Error) {
+        return response
+    }
+
+    if (!response.chapter) {
+        return Error(`Chapter ${chapterId} not found`)
+    }
+
+    return response.chapter
+}
+
+async function getChapterNodeFromReference(
+    stateManager: SourceStateManager,
+    requestManager: RequestManager,
+    mangaId: number,
+    chapterReference: number
+): Promise<any | Error> {
+    const chapterById = await getChapterNodeById(stateManager, requestManager, chapterReference)
+    if (!(chapterById instanceof Error) && chapterById.mangaId === mangaId) {
+        return chapterById
+    }
+
+    return getChapterNodeFromSourceOrder(stateManager, requestManager, mangaId, chapterReference)
+}
+
 export async function fetchChapterPages(
     stateManager: SourceStateManager,
     requestManager: RequestManager,
     mangaId: string,
     chapterId: string
 ): Promise<string[] | Error> {
-    const chapter = await getChapterNodeFromSourceOrder(
+    const chapter = await getChapterNodeFromReference(
         stateManager,
         requestManager,
         Number(mangaId),
@@ -1007,7 +1054,7 @@ export async function makeRequest(stateManager: SourceStateManager, requestManag
 
     const chapterMatch = path.match(/^manga\/(\d+)\/chapter\/(\d+)$/)
     if (chapterMatch && method === "GET") {
-        const chapter = await getChapterNodeFromSourceOrder(
+        const chapter = await getChapterNodeFromReference(
             stateManager,
             requestManager,
             Number(chapterMatch[1]),
@@ -1018,7 +1065,7 @@ export async function makeRequest(stateManager: SourceStateManager, requestManag
     }
 
     if (chapterMatch && method === "PATCH") {
-        const chapter = await getChapterNodeFromSourceOrder(
+        const chapter = await getChapterNodeFromReference(
             stateManager,
             requestManager,
             Number(chapterMatch[1]),
